@@ -319,12 +319,20 @@ async function handleLogin(e) {
 /**
  * Initialize Firebase for authentication
  */
-function initializeFirebase() {
+async function initializeFirebase() {
   try {
     // Check if Firebase is already initialized
     if (!firebase.apps.length) {
-      console.log('Initializing Firebase with config:', JSON.stringify(FIREBASE_CONFIG));
-      firebase.initializeApp(FIREBASE_CONFIG);
+      // Try to fetch config from backend first
+      let config = FIREBASE_CONFIG;
+      try {
+        config = await getFirebaseConfig() || FIREBASE_CONFIG;
+      } catch (error) {
+        console.warn('Could not fetch Firebase config from API, using local config');
+      }
+      
+      console.log('Initializing Firebase with config:', JSON.stringify(config));
+      firebase.initializeApp(config);
     }
     // Force-enable debug mode to see more details
     firebase.auth().settings.appVerificationDisabledForTesting = true;
@@ -340,12 +348,14 @@ function initializeFirebase() {
  * Handle Google login button click
  */
 async function handleGoogleLogin() {
-  if (!initializeFirebase()) {
-    sumatoUtils.showMessage(document.querySelector('.auth-form'), 'Google login is not available. Please check your Firebase configuration.', 'error');
-    return;
-  }
-
   try {
+    // Initialize Firebase
+    const initialized = await initializeFirebase();
+    if (!initialized) {
+      sumatoUtils.showMessage(document.querySelector('.auth-form'), 'Google login is not available. Please check your Firebase configuration.', 'error');
+      return;
+    }
+
     // Create Google auth provider
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('profile');

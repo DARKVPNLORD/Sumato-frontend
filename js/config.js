@@ -33,7 +33,8 @@ const ENDPOINTS = {
     REGISTER: `${API_URL}/auth/register`,
     LOGIN: `${API_URL}/auth/login`,
     GOOGLE: `${API_URL}/auth/google`,
-    GET_USER: `${API_URL}/auth/me`
+    GET_USER: `${API_URL}/auth/me`,
+    FIREBASE_CONFIG: `${API_URL}/auth/firebase-config`
   },
   
   // User endpoints
@@ -62,14 +63,10 @@ const ENDPOINTS = {
 
 /* 
  * Firebase configuration 
- * IMPORTANT: To enable Google authentication, you must:
- * 1. Create a Firebase project at https://console.firebase.google.com/
- * 2. Add a web app to your project
- * 3. Enable Google authentication in the Authentication section
- * 4. Copy your Firebase config here (available in Project Settings > Your Apps)
- * 5. Add your domain to the authorized domains list in Firebase Console
+ * This can be fetched from the backend API for additional security
+ * or set directly here for simpler setup
  */
-// Firebase config is now fetched from the backend to keep it secure
+// Firebase config with API key
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDVwlK5cFzuCz_C61CjxS4kIEP-5A7uhTU",    
   authDomain: "sumato-2d6ea.firebaseapp.com",
@@ -77,4 +74,21 @@ const FIREBASE_CONFIG = {
   storageBucket: "sumato-2d6ea.appspot.com",
   messagingSenderId: "592462311628", 
   appId: "1:592462311628:web:45ca0ca9e63fb7ae8bc3e4"
-}; 
+};
+
+// Function to fetch Firebase config from backend (optional)
+async function getFirebaseConfig() {
+  try {
+    const response = await fetch(ENDPOINTS.AUTH.FIREBASE_CONFIG);
+    const data = await response.json();
+    if (data.success && data.config) {
+      console.log('Fetched Firebase config from API');
+      return data.config;
+    }
+    console.warn('Could not fetch Firebase config from API, using local config');
+    return FIREBASE_CONFIG;
+  } catch (error) {
+    console.error('Error fetching Firebase config:', error);
+    return FIREBASE_CONFIG;
+  }
+} 
