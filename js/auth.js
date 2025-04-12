@@ -69,6 +69,26 @@ window.sumatoUtils = {
         messageElement.remove();
       }
     }, 3000);
+  },
+  
+  // Function to generate a secure random token
+  generateSecureToken: function() {
+    const array = new Uint8Array(32);
+    window.crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  },
+  
+  // Function to reset form validation
+  resetFormValidation: function(form) {
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+      input.classList.remove('invalid');
+      const validationMessage = input.parentElement.querySelector('.validation-message');
+      if (validationMessage) {
+        validationMessage.textContent = '';
+        validationMessage.classList.remove('error');
+      }
+    });
   }
 };
 
