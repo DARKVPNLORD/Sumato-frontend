@@ -8,7 +8,7 @@
   <meta name="description" content="Register for a Sumato Technology account to access exclusive features, place orders, and more.">
   <meta name="theme-color" content="#e63232">
   <!-- Security headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://www.gstatic.com https://*.googleapis.com; connect-src 'self' https://sumato-technology-api.onrender.com https://*.googleapis.com https://*.firebase.com https://*.firebaseio.com https://identitytoolkit.googleapis.com; frame-src https://www.google.com https://*.firebaseapp.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://www.gstatic.com https://*.googleapis.com; connect-src 'self' https://*.onrender.com https://*.netlify.app https://*.googleapis.com https://*.firebase.com https://*.firebaseio.com https://identitytoolkit.googleapis.com; frame-src 'self' https://www.google.com https://*.firebaseapp.com;">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -83,7 +83,7 @@
             <span>Register with</span>
           </div>
           
-          <a href="#" class="social-login-btn" rel="noopener">
+          <a href="#" id="googleLogin" class="social-login-btn" rel="noopener">
             <img src="assets/icons/google.svg" alt="Google Logo" width="20" height="20">
             Register with Google
           </a>
@@ -94,7 +94,7 @@
         </div>
         
         <!-- Registration Form -->
-        <form id="register-form" autocomplete="on" novalidate>
+        <form id="registerForm" autocomplete="on" novalidate>
           <div class="form-row">
             <div class="form-group">
               <label for="firstName" class="form-label">First Name</label>
@@ -219,6 +219,11 @@
   </footer>
 
   <!-- JavaScript Files -->
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-auth-compat.js"></script>
+  
+  <!-- App JS Files -->
   <script src="js/config.js" defer></script>
   <script src="js/api.js" defer></script>
   <script src="js/main.js" defer></script>

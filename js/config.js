@@ -60,11 +60,12 @@ const ENDPOINTS = {
  * 4. Copy your Firebase config here (available in Project Settings > Your Apps)
  * 5. Add your domain to the authorized domains list in Firebase Console
  */
+// TODO: Replace with your Firebase configuration from the Firebase Console
 const FIREBASE_CONFIG = {
-  apiKey: "",         // Add your Firebase API key
-  authDomain: "",     // Add your Firebase auth domain
-  projectId: "",      // Add your Firebase project ID
-  storageBucket: "",  // Add your Firebase storage bucket
-  messagingSenderId: "",  // Add your Firebase messaging sender ID
-  appId: ""           // Add your Firebase app ID
+  apiKey: "AIzaSyC_EXAMPLE_KEY_REPLACE_THIS",    
+  authDomain: "your-project-id.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project-id.appspot.com",
+  messagingSenderId: "123456789012", 
+  appId: "1:123456789012:web:abc123def456"
 }; 

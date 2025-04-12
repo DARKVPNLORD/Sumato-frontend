@@ -317,21 +317,48 @@ async function handleLogin(e) {
 }
 
 /**
- * Handle Google login
- * This will be implemented when Firebase is properly set up
+ * Initialize Firebase for authentication
  */
-async function handleGoogleLogin() {
+function initializeFirebase() {
   try {
-    // Initialize Firebase if not already done
-    if (!window.firebase?.apps?.length) {
+    // Check if Firebase is already initialized
+    if (!firebase.apps.length) {
       firebase.initializeApp(FIREBASE_CONFIG);
     }
+    console.log('Firebase initialized successfully');
+    return true;
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    return false;
+  }
+}
 
+/**
+ * Handle Google login button click
+ */
+async function handleGoogleLogin() {
+  if (!initializeFirebase()) {
+    showMessage('Google login is not available. Please check your Firebase configuration.', 'error');
+    return;
+  }
+
+  try {
+    // Create Google auth provider
     const provider = new firebase.auth.GoogleAuthProvider();
-    const result = await firebase.auth().signInWithPopup(provider);
-    const idToken = await result.user.getIdToken();
+    provider.addScope('profile');
+    provider.addScope('email');
 
-    // Call backend with the token
+    console.log('Google sign-in started');
+    
+    // Sign in with popup
+    const result = await firebase.auth().signInWithPopup(provider);
+    
+    // Get Firebase ID token
+    const idToken = await result.user.getIdToken();
+    
+    console.log('Google sign-in successful, sending ID token to backend');
+    
+    // Send the token to your backend
     const response = await authAPI.googleAuth(idToken);
     
     // Save auth token and user data
@@ -339,15 +366,36 @@ async function handleGoogleLogin() {
     localStorage.setItem('user', JSON.stringify(response.user));
     
     // Show success message
-    sumatoUtils.showMessage('Google login successful! Redirecting...', 'success');
+    showMessage('Login successful! Redirecting to dashboard...', 'success');
     
-    // Redirect to dashboard
+    // Redirect to dashboard after short delay
     setTimeout(() => {
       window.location.href = '/dashboard.html';
-    }, 1000);
+    }, 1500);
+    
   } catch (error) {
     console.error('Google login error:', error);
-    sumatoUtils.showMessage('Failed to login with Google. Please try again.', 'error');
+    let errorMessage = 'Google login failed. Please try again.';
+    
+    if (error.code) {
+      // Firebase specific error codes
+      switch (error.code) {
+        case 'auth/popup-blocked':
+          errorMessage = 'Login popup was blocked. Please allow popups for this site.';
+          break;
+        case 'auth/popup-closed-by-user':
+          errorMessage = 'Login was cancelled. Please try again.';
+          break;
+        case 'auth/cancelled-popup-request':
+          errorMessage = 'Login request was cancelled. Please try again.';
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your connection and try again.';
+          break;
+      }
+    }
+    
+    showMessage(errorMessage, 'error');
   }
 }
 

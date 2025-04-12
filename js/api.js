@@ -32,7 +32,8 @@ async function apiRequest(url, method = 'GET', data = null, requiresAuth = false
     const config = {
       method,
       headers,
-      credentials: 'same-origin'
+      credentials: 'include',
+      mode: 'cors'
     };
 
     // Add request body for non-GET requests
@@ -40,10 +41,24 @@ async function apiRequest(url, method = 'GET', data = null, requiresAuth = false
       config.body = JSON.stringify(data);
     }
 
+    console.log(`Making ${method} request to: ${url}`);
     const response = await fetch(url, config);
-    const responseData = await response.json();
+    
+    // For non-JSON responses (like 204 No Content)
+    if (response.status === 204) {
+      return { success: true };
+    }
+    
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      responseData = { success: false, message: 'Invalid response format' };
+    }
 
     if (!response.ok) {
+      console.error('API request failed:', responseData);
       throw new Error(responseData.message || 'An error occurred');
     }
 
