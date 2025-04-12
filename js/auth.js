@@ -338,7 +338,7 @@ function initializeFirebase() {
  */
 async function handleGoogleLogin() {
   if (!initializeFirebase()) {
-    sumatoUtils.showMessage('Google login is not available. Please check your Firebase configuration.', 'error');
+    sumatoUtils.showMessage(document.querySelector('.auth-form'), 'Google login is not available. Please check your Firebase configuration.', 'error');
     return;
   }
 
@@ -366,7 +366,7 @@ async function handleGoogleLogin() {
     localStorage.setItem('user', JSON.stringify(response.user));
     
     // Show success message
-    sumatoUtils.showMessage('Login successful! Redirecting to dashboard...', 'success');
+    sumatoUtils.showMessage(document.querySelector('.auth-form'), 'Login successful! Redirecting to dashboard...', 'success');
     
     // Redirect to dashboard after short delay
     setTimeout(() => {
@@ -395,7 +395,7 @@ async function handleGoogleLogin() {
       }
     }
     
-    sumatoUtils.showMessage(errorMessage, 'error');
+    sumatoUtils.showMessage(document.querySelector('.auth-form'), errorMessage, 'error');
   }
 }
 
