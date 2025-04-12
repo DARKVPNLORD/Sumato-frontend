@@ -34,10 +34,10 @@ window.sumatoUtils = {
     inputElement.classList.add('invalid');
     
     // Add error message if it doesn't exist
-    let errorElement = inputElement.parentElement.querySelector('.error-message');
+    let errorElement = inputElement.parentElement.querySelector('.validation-message');
     if (!errorElement) {
       errorElement = document.createElement('div');
-      errorElement.className = 'error-message';
+      errorElement.className = 'validation-message';
       inputElement.parentElement.appendChild(errorElement);
     }
     
@@ -48,27 +48,33 @@ window.sumatoUtils = {
     inputElement.classList.remove('invalid');
     
     // Remove error message if it exists
-    const errorElement = inputElement.parentElement.querySelector('.error-message');
+    const errorElement = inputElement.parentElement.querySelector('.validation-message');
     if (errorElement) {
-      errorElement.remove();
+      errorElement.textContent = '';
     }
   },
   
   showMessage: function(container, message, type = 'success') {
     // Create message element
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${type}`;
+    let messageElement = container.querySelector('.message');
+    if (!messageElement) {
+      messageElement = document.createElement('div');
+      messageElement.className = `message ${type}`;
+      container.insertBefore(messageElement, container.firstChild);
+    } else {
+      messageElement.className = `message ${type}`;
+    }
+    
     messageElement.textContent = message;
     
-    // Add to container at the top
-    container.insertBefore(messageElement, container.firstChild);
-    
-    // Remove after 3 seconds (reduced from 5)
-    setTimeout(() => {
-      if (container.contains(messageElement)) {
-        messageElement.remove();
-      }
-    }, 3000);
+    // Remove after 3 seconds (for success and info messages)
+    if (type === 'success' || type === 'info') {
+      setTimeout(() => {
+        if (container.contains(messageElement)) {
+          messageElement.remove();
+        }
+      }, 3000);
+    }
   }
 };
 
@@ -609,46 +615,6 @@ function updatePasswordStrength(password, indicator) {
   } else {
     indicator.classList.add('strong');
   }
-}
-
-/**
- * Show a message to the user
- * @param {string} message - The message text
- * @param {string} type - The message type (success, error, warning)
- */
-function showMessage(message, type = 'info') {
-  // Create message element if it doesn't exist
-  let messageElement = document.querySelector('.message-container');
-  
-  if (!messageElement) {
-    messageElement = document.createElement('div');
-    messageElement.className = 'message-container';
-    document.body.appendChild(messageElement);
-  }
-  
-  // Create the message
-  const messageItem = document.createElement('div');
-  messageItem.className = `message ${type}`;
-  messageItem.textContent = message;
-  
-  // Add close button
-  const closeButton = document.createElement('button');
-  closeButton.className = 'message-close';
-  closeButton.innerHTML = '&times;';
-  closeButton.addEventListener('click', function() {
-    messageItem.remove();
-  });
-  
-  messageItem.appendChild(closeButton);
-  messageElement.appendChild(messageItem);
-  
-  // Auto-remove after a delay
-  setTimeout(() => {
-    messageItem.classList.add('fade-out');
-    setTimeout(() => {
-      messageItem.remove();
-    }, 300);
-  }, 5000);
 }
 
 /**
