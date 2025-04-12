@@ -6,130 +6,68 @@
 // Import config
 // Note: Config must be loaded first in HTML before this file
 
-// API Configuration
-const api = {
-  // Base URL for API requests
-  baseURL: sumatoConfig.apiBaseURL || 'https://api.sumatotechnology.com',
-  
-  // Headers to include with every request
-  defaultHeaders: {
-    'Content-Type': 'application/json',
-  },
-  
-  // Get auth token from localStorage
-  getToken() {
-    return localStorage.getItem('token');
-  },
-  
-  // Get headers including authorization if token exists
-  getHeaders() {
-    const headers = { ...this.defaultHeaders };
-    const token = this.getToken();
-    if (token) {
+/**
+ * Makes an API request
+ * @param {string} url - The API endpoint
+ * @param {string} method - HTTP method (GET, POST, PUT, DELETE)
+ * @param {object} data - Request body data (optional)
+ * @param {boolean} requiresAuth - Whether the request requires authentication
+ * @returns {Promise} - Promise resolving to the API response
+ */
+async function apiRequest(url, method = 'GET', data = null, requiresAuth = false) {
+  try {
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    // Add auth token if required
+    if (requiresAuth) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
       headers['Authorization'] = `Bearer ${token}`;
     }
-    return headers;
-  },
-  
-  // Handle HTTP errors and parse JSON response
-  async handleResponse(response) {
-    if (!response.ok) {
-      const error = new Error('API request failed');
-      
-      try {
-        const data = await response.json();
-        error.response = { data, status: response.status };
-      } catch (e) {
-        error.response = { status: response.status };
-      }
-      
-      throw error;
+
+    const config = {
+      method,
+      headers,
+      credentials: 'include',
+      mode: 'cors'
+    };
+
+    // Add request body for non-GET requests
+    if (method !== 'GET' && data) {
+      config.body = JSON.stringify(data);
     }
+
+    console.log(`Making ${method} request to: ${url}`);
+    const response = await fetch(url, config);
     
-    // For 204 No Content responses
+    // For non-JSON responses (like 204 No Content)
     if (response.status === 204) {
-      return null;
+      return { success: true };
     }
     
-    return response.json();
-  },
-  
-  // GET request
-  async get(endpoint, params = {}) {
-    const url = new URL(`${this.baseURL}${endpoint}`);
-    
-    // Add query parameters
-    Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null) {
-        url.searchParams.append(key, params[key]);
-      }
-    });
-    
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    });
-    
-    return this.handleResponse(response);
-  },
-  
-  // POST request
-  async post(endpoint, data = {}) {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    });
-    
-    return this.handleResponse(response);
-  },
-  
-  // PUT request
-  async put(endpoint, data = {}) {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'PUT',
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    });
-    
-    return this.handleResponse(response);
-  },
-  
-  // DELETE request
-  async delete(endpoint) {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      method: 'DELETE',
-      headers: this.getHeaders(),
-    });
-    
-    return this.handleResponse(response);
-  },
-  
-  // Specific API endpoints
-  endpoints: {
-    // Auth endpoints
-    auth: {
-      register: '/auth/register',
-      login: '/auth/login',
-      google: '/auth/google',
-      me: '/auth/me',
-    },
-    
-    // User endpoints
-    user: {
-      profile: '/user/profile',
-      password: '/user/password',
-      dashboard: '/user/dashboard',
-    },
-    
-    // Admin endpoints
-    admin: {
-      login: '/admin/login',
-      me: '/admin/me',
-      create: '/admin/create',
-    },
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (error) {
+      console.error('Error parsing JSON response:', error);
+      responseData = { success: false, message: 'Invalid response format' };
+    }
+
+    if (!response.ok) {
+      console.error('API request failed:', responseData);
+      throw new Error(responseData.message || 'An error occurred');
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error('API request error:', error);
+    throw error;
   }
-};
+}
 
 /**
  * Authentication API functions
@@ -137,22 +75,22 @@ const api = {
 const authAPI = {
   // Register a new user
   register: async (userData) => {
-    return api.post(api.endpoints.auth.register, userData);
+    return apiRequest(ENDPOINTS.AUTH.REGISTER, 'POST', userData);
   },
 
   // Login with email/password
   login: async (credentials) => {
-    return api.post(api.endpoints.auth.login, credentials);
+    return apiRequest(ENDPOINTS.AUTH.LOGIN, 'POST', credentials);
   },
 
   // Login or register with Google
   googleAuth: async (idToken) => {
-    return api.post(api.endpoints.auth.google, { idToken });
+    return apiRequest(ENDPOINTS.AUTH.GOOGLE, 'POST', { idToken });
   },
 
   // Get current user profile
   getProfile: async () => {
-    return api.get(api.endpoints.auth.me);
+    return apiRequest(ENDPOINTS.AUTH.GET_USER, 'GET', null, true);
   }
 };
 
@@ -162,17 +100,17 @@ const authAPI = {
 const userAPI = {
   // Update user profile
   updateProfile: async (profileData) => {
-    return api.put(api.endpoints.user.profile, profileData);
+    return apiRequest(ENDPOINTS.USER.UPDATE_PROFILE, 'PUT', profileData, true);
   },
 
   // Change user password
   changePassword: async (passwordData) => {
-    return api.put(api.endpoints.user.password, passwordData);
+    return apiRequest(ENDPOINTS.USER.CHANGE_PASSWORD, 'PUT', passwordData, true);
   },
 
   // Get user dashboard data
   getDashboard: async () => {
-    return api.get(api.endpoints.user.dashboard);
+    return apiRequest(ENDPOINTS.USER.DASHBOARD, 'GET', null, true);
   }
 };
 
@@ -182,16 +120,16 @@ const userAPI = {
 const adminAPI = {
   // Admin login
   login: async (credentials) => {
-    return api.post(api.endpoints.admin.login, credentials);
+    return apiRequest(ENDPOINTS.ADMIN.LOGIN, 'POST', credentials);
   },
 
   // Get admin profile
   getProfile: async () => {
-    return api.get(api.endpoints.admin.me);
+    return apiRequest(ENDPOINTS.ADMIN.GET_ADMIN, 'GET', null, true);
   },
 
   // Create new admin (superadmin only)
   createAdmin: async (adminData) => {
-    return api.post(api.endpoints.admin.create, adminData);
+    return apiRequest(ENDPOINTS.ADMIN.CREATE_ADMIN, 'POST', adminData, true);
   }
 }; 

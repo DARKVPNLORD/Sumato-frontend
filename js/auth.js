@@ -34,10 +34,10 @@ window.sumatoUtils = {
     inputElement.classList.add('invalid');
     
     // Add error message if it doesn't exist
-    let errorElement = inputElement.parentElement.querySelector('.validation-message');
+    let errorElement = inputElement.parentElement.querySelector('.error-message');
     if (!errorElement) {
       errorElement = document.createElement('div');
-      errorElement.className = 'validation-message';
+      errorElement.className = 'error-message';
       inputElement.parentElement.appendChild(errorElement);
     }
     
@@ -48,33 +48,27 @@ window.sumatoUtils = {
     inputElement.classList.remove('invalid');
     
     // Remove error message if it exists
-    const errorElement = inputElement.parentElement.querySelector('.validation-message');
+    const errorElement = inputElement.parentElement.querySelector('.error-message');
     if (errorElement) {
-      errorElement.textContent = '';
+      errorElement.remove();
     }
   },
   
   showMessage: function(container, message, type = 'success') {
     // Create message element
-    let messageElement = container.querySelector('.message');
-    if (!messageElement) {
-      messageElement = document.createElement('div');
-      messageElement.className = `message ${type}`;
-      container.insertBefore(messageElement, container.firstChild);
-    } else {
-      messageElement.className = `message ${type}`;
-    }
-    
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${type}`;
     messageElement.textContent = message;
     
-    // Remove after 3 seconds (for success and info messages)
-    if (type === 'success' || type === 'info') {
-      setTimeout(() => {
-        if (container.contains(messageElement)) {
-          messageElement.remove();
-        }
-      }, 3000);
-    }
+    // Add to container at the top
+    container.insertBefore(messageElement, container.firstChild);
+    
+    // Remove after 3 seconds (reduced from 5)
+    setTimeout(() => {
+      if (container.contains(messageElement)) {
+        messageElement.remove();
+      }
+    }, 3000);
   }
 };
 
@@ -96,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           window.location.href = '/login.html';
-        });
+      });
     }
   }
   
@@ -128,11 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
   passwordToggleBtns.forEach(btn => {
     btn.addEventListener('click', togglePasswordVisibility);
   });
-
-  // Initialize Firebase from config
-  if (sumatoConfig.firebase) {
-    firebase.initializeApp(sumatoConfig.firebase);
-  }
 });
 
 /**
@@ -141,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupPasswordToggles() {
   const togglePassword = document.getElementById('toggle-password');
   const passwordInput = document.getElementById('password');
-
+  
   if (togglePassword && passwordInput) {
     togglePassword.addEventListener('click', function() {
       const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -276,7 +265,6 @@ async function handleLogin(e) {
   // Get form data
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
-  const rememberMe = document.getElementById('rememberMe').checked;
   
   // Validate form inputs
   let isValid = true;
@@ -311,12 +299,6 @@ async function handleLogin(e) {
     // Save auth token and user data
     localStorage.setItem('token', response.token);
     localStorage.setItem('user', JSON.stringify(response.user));
-    
-    if (rememberMe) {
-      localStorage.setItem('email', email);
-    } else {
-      localStorage.removeItem('email');
-    }
     
     // Show success message
     sumatoUtils.showMessage('Login successful! Redirecting...', 'success');
@@ -618,71 +600,41 @@ function updatePasswordStrength(password, indicator) {
 }
 
 /**
- * Toggle password visibility
- * @param {Event} e - The click event
+ * Show a message to the user
+ * @param {string} message - The message text
+ * @param {string} type - The message type (success, error, warning)
  */
-function togglePasswordVisibility(e) {
-  e.preventDefault();
+function showMessage(message, type = 'info') {
+  // Create message element if it doesn't exist
+  let messageElement = document.querySelector('.message-container');
   
-  // Find the closest password input field
-  const btn = e.currentTarget;
-  const inputWrapper = btn.closest('.password-field');
-  const passwordInput = inputWrapper.querySelector('input');
-  
-  if (!passwordInput) return;
-  
-  // Toggle between password and text type
-  const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-  passwordInput.setAttribute('type', type);
-  
-  // Update icon
-  const icon = btn.querySelector('i');
-  if (icon) {
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
+  if (!messageElement) {
+    messageElement = document.createElement('div');
+    messageElement.className = 'message-container';
+    document.body.appendChild(messageElement);
   }
-}
-
-/**
- * Reset form validation state
- * @param {HTMLFormElement} form - The form to reset
- */
-function resetFormValidation(form) {
-  if (!form) return;
   
-  // Clear all error messages
-  const errorMessages = form.querySelectorAll('.validation-message');
-  errorMessages.forEach(msg => {
-    msg.textContent = '';
-    msg.classList.remove('error');
+  // Create the message
+  const messageItem = document.createElement('div');
+  messageItem.className = `message ${type}`;
+  messageItem.textContent = message;
+  
+  // Add close button
+  const closeButton = document.createElement('button');
+  closeButton.className = 'message-close';
+  closeButton.innerHTML = '&times;';
+  closeButton.addEventListener('click', function() {
+    messageItem.remove();
   });
   
-  // Remove invalid class from inputs
-  const inputs = form.querySelectorAll('input');
-  inputs.forEach(input => {
-    input.classList.remove('invalid');
-  });
-}
-
-/**
- * Mark an input as invalid
- * @param {string} inputId - The ID of the input to mark
- * @param {string} message - The error message
- */
-function markInvalid(inputId, message) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
+  messageItem.appendChild(closeButton);
+  messageElement.appendChild(messageItem);
   
-  input.classList.add('invalid');
-  
-  // Find validation message element
-  let validationMsg = input.parentElement.querySelector('.validation-message');
-  if (!validationMsg) {
-    validationMsg = input.parentElement.parentElement.querySelector('.validation-message');
-  }
-  
-  if (validationMsg) {
-    validationMsg.textContent = message;
-    validationMsg.classList.add('error');
-  }
+  // Auto-remove after a delay
+  setTimeout(() => {
+    messageItem.classList.add('fade-out');
+    setTimeout(() => {
+      messageItem.remove();
+    }, 300);
+  }, 5000);
 } 
