@@ -91,4 +91,61 @@ async function getFirebaseConfig() {
     console.error('Error fetching Firebase config:', error);
     return FIREBASE_CONFIG;
   }
-} 
+}
+
+// Firebase Configuration
+function initializeFirebase() {
+  try {
+    // Skip initialization if already done
+    if (firebase.apps.length) {
+      return;
+    }
+    
+    // Firebase configuration - do not log to console for security
+    const firebaseConfig = {
+      apiKey: "AIzaSyCzrIDKYMuuieesljYFj-Oncu1H2-5SW",
+      authDomain: "sumato-technology-6a3cc.firebaseapp.com",
+      projectId: "sumato-technology-6a3cc",
+      storageBucket: "sumato-technology-6a3cc.appspot.com",
+      messagingSenderId: "572695801633",
+      appId: "1:572695801633:web:0a4385b98afc761e5906a",
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    console.log('Firebase initialized successfully');
+  } catch (error) {
+    console.error('Firebase initialization error:', error.message);
+  }
+}
+
+// Utility functions
+const sumatoUtils = {
+  // Show a message inside a container
+  showMessage: function(container, message, type = 'info') {
+    // Create message element if it doesn't exist
+    let messageEl = container.querySelector('.message');
+    if (!messageEl) {
+      messageEl = document.createElement('div');
+      messageEl.className = 'message';
+      container.prepend(messageEl);
+    }
+    
+    // Set message content
+    messageEl.textContent = message;
+    messageEl.className = `message message-${type}`;
+    messageEl.style.display = 'block';
+    
+    // Auto-hide info and success messages after 5 seconds
+    if (type === 'info' || type === 'success') {
+      setTimeout(() => {
+        messageEl.style.display = 'none';
+      }, 5000);
+    }
+  },
+  
+  // Validate form fields
+  validateField: function(field, rules) {
+    // Implementation of field validation
+  }
+}; 
