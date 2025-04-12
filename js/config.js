@@ -17,6 +17,15 @@ const ENVIRONMENT = window.location.hostname === 'localhost' ||
 // Export the appropriate API base URL
 const API_URL = API_BASE_URL[ENVIRONMENT];
 
+// CORS settings
+const CORS_SETTINGS = {
+  credentials: 'include',
+  mode: 'cors',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+};
+
 // API Endpoints
 const ENDPOINTS = {
   // Auth endpoints

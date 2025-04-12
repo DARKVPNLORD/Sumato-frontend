@@ -323,8 +323,11 @@ function initializeFirebase() {
   try {
     // Check if Firebase is already initialized
     if (!firebase.apps.length) {
+      console.log('Initializing Firebase with config:', JSON.stringify(FIREBASE_CONFIG));
       firebase.initializeApp(FIREBASE_CONFIG);
     }
+    // Force-enable debug mode to see more details
+    firebase.auth().settings.appVerificationDisabledForTesting = true;
     console.log('Firebase initialized successfully');
     return true;
   } catch (error) {
@@ -347,6 +350,10 @@ async function handleGoogleLogin() {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('profile');
     provider.addScope('email');
+    // Add additional OAuth scopes if needed
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
 
     console.log('Google sign-in started');
     
@@ -391,6 +398,15 @@ async function handleGoogleLogin() {
           break;
         case 'auth/network-request-failed':
           errorMessage = 'Network error. Please check your connection and try again.';
+          break;
+        case 'auth/unauthorized-domain':
+          errorMessage = 'This domain is not authorized for Firebase authentication. Please add it in Firebase Console.';
+          break;
+        case 'auth/operation-not-allowed':
+          errorMessage = 'Google authentication is not enabled for this Firebase project.';
+          break;
+        case 'auth/internal-error':
+          errorMessage = 'An internal error occurred. Please try again later.';
           break;
       }
     }
