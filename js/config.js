@@ -6,7 +6,7 @@
 // API Base URL - Change this based on environment
 const API_BASE_URL = {
   development: 'http://localhost:5000/api',
-  production: 'https://sumato-backend.onrender.com/api' // Update with your actual backend URL when deployed
+  production: 'https://sumato-technology-api.onrender.com/api' // Updated with the actual deployed backend URL
 };
 
 // Determine current environment (defaults to production for safety)
@@ -39,15 +39,32 @@ const ENDPOINTS = {
     LOGIN: `${API_URL}/admin/login`,
     GET_ADMIN: `${API_URL}/admin/me`,
     CREATE_ADMIN: `${API_URL}/admin/create`
+  },
+  
+  // Quote endpoints
+  QUOTES: {
+    SUBMIT: `${API_URL}/quotes`,
+    GET_USER_QUOTES: `${API_URL}/quotes/user`,
+    ADMIN_GET_QUOTES: `${API_URL}/quotes/admin`,
+    ADMIN_GET_QUOTE: (id) => `${API_URL}/quotes/admin/${id}`,
+    ADMIN_UPDATE_QUOTE: (id) => `${API_URL}/quotes/admin/${id}`
   }
 };
 
-// Firebase configuration (to be filled with your Firebase project details)
+/* 
+ * Firebase configuration 
+ * IMPORTANT: To enable Google authentication, you must:
+ * 1. Create a Firebase project at https://console.firebase.google.com/
+ * 2. Add a web app to your project
+ * 3. Enable Google authentication in the Authentication section
+ * 4. Copy your Firebase config here (available in Project Settings > Your Apps)
+ * 5. Add your domain to the authorized domains list in Firebase Console
+ */
 const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "",         // Add your Firebase API key
+  authDomain: "",     // Add your Firebase auth domain
+  projectId: "",      // Add your Firebase project ID
+  storageBucket: "",  // Add your Firebase storage bucket
+  messagingSenderId: "",  // Add your Firebase messaging sender ID
+  appId: ""           // Add your Firebase app ID
 }; 

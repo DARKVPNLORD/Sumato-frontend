@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Fetch quotes from API
-    fetch(`/api/quotes/admin?${queryParams}`, {
+    fetch(`${ENDPOINTS.QUOTES.ADMIN_GET_QUOTES}?${queryParams}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function openQuoteModal(quoteId) {
     // Fetch quote details
-    fetch(`/api/quotes/admin/${quoteId}`, {
+    fetch(ENDPOINTS.QUOTES.ADMIN_GET_QUOTE(quoteId), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function updateQuoteStatus(quoteId, data, callback) {
-    fetch(`/api/quotes/admin/${quoteId}`, {
+    fetch(ENDPOINTS.QUOTES.ADMIN_UPDATE_QUOTE(quoteId), {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,

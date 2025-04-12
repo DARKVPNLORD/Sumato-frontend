@@ -30,7 +30,7 @@ function loadDashboardData() {
   }
   
   // Fetch dashboard data from API
-  fetch('/api/users/dashboard', {
+  fetch(ENDPOINTS.USER.DASHBOARD, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`,

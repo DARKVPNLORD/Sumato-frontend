@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         // Submit to API
-        fetch('/api/quotes', {
+        fetch(ENDPOINTS.QUOTES.SUBMIT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
