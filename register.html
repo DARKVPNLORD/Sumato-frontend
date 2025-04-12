@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Create an Account - Sumato Technology</title>
+  <meta name="description" content="Register for a Sumato Technology account to access exclusive features, place orders, and more.">
+  <meta name="theme-color" content="#e63232">
+  <!-- Security headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container header-container">
+      <div class="logo">
+        <a href="index.html">
+          <img src="assets/logo.png" alt="Sumato Technology Logo" width="180" height="50">
+        </a>
+      </div>
+      
+      <nav aria-label="Main navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="solutions.html">Solutions</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      
+      <a href="login.html" class="btn btn-primary">Sign In</a>
+      
+      <!-- Mobile Menu Toggle Button (Hidden on Desktop) -->
+      <button class="mobile-menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    
+    <!-- Mobile Menu (Hidden by Default) -->
+    <div class="mobile-menu" id="mobile-menu" aria-labelledby="mobile-menu-toggle">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="solutions.html">Solutions</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html" class="mobile-sign-in">Sign In</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Registration Page -->
+  <section class="auth-page">
+    <div class="auth-container">
+      <div class="auth-header">
+        <img src="assets/logo.png" alt="Sumato Technology Logo" width="180" height="50">
+        <h1 class="auth-title">Create Your Account</h1>
+      </div>
+      
+      <div class="auth-form">
+        <!-- Social Registration Options -->
+        <div class="social-login">
+          <div class="social-login-title">
+            <span>Register with</span>
+          </div>
+          
+          <a href="#" class="social-login-btn" rel="noopener">
+            <img src="assets/icons/google.svg" alt="Google Logo" width="20" height="20">
+            Register with Google
+          </a>
+        </div>
+        
+        <div class="auth-divider">
+          <span>or</span>
+        </div>
+        
+        <!-- Registration Form -->
+        <form id="register-form" autocomplete="on" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName" class="form-label">First Name</label>
+              <input type="text" id="firstName" name="firstName" class="form-control" required placeholder="Your first name" autocomplete="given-name">
+            </div>
+            
+            <div class="form-group">
+              <label for="lastName" class="form-label">Last Name</label>
+              <input type="text" id="lastName" name="lastName" class="form-control" required placeholder="Your last name" autocomplete="family-name">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" id="email" name="email" class="form-control" required placeholder="Your email address" autocomplete="email" aria-describedby="email-validation">
+            <div id="email-validation" class="validation-message" aria-live="polite"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="company" class="form-label">Company Name</label>
+            <input type="text" id="company" name="company" class="form-control" placeholder="Your company name (optional)" autocomplete="organization">
+          </div>
+          
+          <div class="form-group">
+            <label for="password" class="form-label">Create Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="password" name="password" class="form-control" required placeholder="Create a strong password" autocomplete="new-password" aria-describedby="password-validation">
+              <button type="button" id="toggle-password" class="toggle-password" aria-label="Toggle password visibility">
+                <i class="fas fa-eye" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div id="password-validation" class="validation-message" aria-live="polite"></div>
+            <div class="password-strength"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="confirm_password" class="form-label">Confirm Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="Confirm your password" autocomplete="new-password" aria-describedby="confirm-password-validation">
+              <button type="button" id="toggle-confirm-password" class="toggle-password" aria-label="Toggle password visibility">
+                <i class="fas fa-eye" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div id="confirm-password-validation" class="validation-message" aria-live="polite"></div>
+          </div>
+          
+          <div class="form-group terms-checkbox">
+            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+            <label for="agreeTerms">I agree to the <a href="terms.html">Terms of Service</a> and <a href="privacy.html">Privacy Policy</a></label>
+            <div id="terms-validation" class="validation-message" aria-live="polite"></div>
+          </div>
+          
+          <input type="hidden" name="registerToken" value="">
+          <button type="submit" class="auth-submit">Create Account</button>
+        </form>
+      </div>
+      
+      <div class="auth-footer">
+        <p>Already have an account? <a href="login.html">Sign In</a></p>
+        <a href="index.html" class="back-to-home">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Home
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-container">
+        <div class="footer-logo">
+          <img src="assets/logo.png" alt="Sumato Technology Logo" width="180" height="50">
+          <p>Your trusted B2B partner for industrial equipment and supplies.</p>
+          <div class="social-icons">
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="solutions.html">Solutions</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Product Categories</h3>
+          <ul>
+            <li><a href="products.html#industrial-tools">Industrial Tools</a></li>
+            <li><a href="products.html#machine-tools">Machine Tools</a></li>
+            <li><a href="products.html#oils-lubricants">Oils & Lubricants</a></li>
+            <li><a href="products.html#safety-equipment">Safety Equipment</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Contact Information</h3>
+          <div class="contact-info">
+            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+            <p>123 Industrial Parkway, Business District</p>
+          </div>
+          <div class="contact-info">
+            <i class="fas fa-phone" aria-hidden="true"></i>
+            <p><a href="tel:+15551234567">+1 (555) 123-4567</a></p>
+          </div>
+          <div class="contact-info">
+            <i class="fas fa-envelope" aria-hidden="true"></i>
+            <p><a href="mailto:info@sumatotechnology.com">info@sumatotechnology.com</a></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="copyright">
+        <p>&copy; <span id="currentYear">2023</span> Sumato Technology. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript Files -->
+  <script src="js/main.js" defer></script>
+  <script src="js/auth.js" defer></script>
+  <script>
+    // Update copyright year
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    
+    // Generate a secure registration token
+    document.addEventListener('DOMContentLoaded', function() {
+      const tokenField = document.querySelector('input[name="registerToken"]');
+      if (tokenField) {
+        // Generate a secure random token
+        const array = new Uint8Array(32);
+        window.crypto.getRandomValues(array);
+        const token = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        tokenField.value = token;
+      }
+      
+      // Ensure confirm password toggle works
+      const toggleConfirmButton = document.getElementById('toggle-confirm-password');
+      const confirmPasswordInput = document.getElementById('confirm_password');
+      
+      if (toggleConfirmButton && confirmPasswordInput) {
+        toggleConfirmButton.addEventListener('click', function() {
+          const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          confirmPasswordInput.setAttribute('type', type);
+          
+          // Update icon
+          const icon = toggleConfirmButton.querySelector('i');
+          icon.classList.toggle('fa-eye');
+          icon.classList.toggle('fa-eye-slash');
+        });
+      }
+    });
+  </script>
+</body>
+</html> 

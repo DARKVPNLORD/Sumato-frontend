@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Get in touch with our team for inquiries, quotes, or support. We'd love to hear from you!">
+  <meta name="theme-color" content="#e63232">
+  <!-- Security headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self'; frame-src https://www.google.com;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <title>Contact Us - Sumato Technology</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/contact.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container header-container">
+      <div class="logo">
+        <a href="index.html">
+          <img src="assets/logo.png" alt="Sumato Technology Logo" width="180" height="50">
+        </a>
+      </div>
+      
+      <nav aria-label="Main navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="solutions.html">Solutions</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html" class="active" aria-current="page">Contact</a></li>
+        </ul>
+      </nav>
+      
+      <a href="login.html" class="btn btn-primary">Sign In</a>
+      
+      <!-- Mobile Menu Toggle Button (Hidden on Desktop) -->
+      <button class="mobile-menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    
+    <!-- Mobile Menu (Hidden by Default) -->
+    <div class="mobile-menu" id="mobile-menu" aria-labelledby="mobile-menu-toggle">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="solutions.html">Solutions</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html" class="active" aria-current="page">Contact</a></li>
+        <li><a href="login.html" class="mobile-sign-in">Sign In</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <h1>Contact Us</h1>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="contact-section">
+    <div class="container">
+      <!-- Top Section: Get in Touch -->
+      <div class="top-intro">
+        <h2>Get in Touch</h2>
+        <p>Our team is ready to assist you with any questions you may have about our products or services. Whether you need a quote, technical support, or want to discuss how our solutions can help your business, we're here to help.</p>
+      </div>
+      
+      <div class="contact-wrapper">
+        <!-- Left Column: Contact Form -->
+        <div class="contact-form-wrap">
+          <h2>Send Us a Message</h2>
+          <form id="contact-form" autocomplete="on" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" name="fullName" required placeholder="Your full name" autocomplete="name">
+              </div>
+              
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="Your email address" autocomplete="email">
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="Your phone number (optional)" autocomplete="tel">
+              </div>
+              
+              <div class="form-group">
+                <label for="subject">Subject</label>
+                <input type="text" id="subject" name="subject" required placeholder="Subject of your message">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="5" required placeholder="Your message"></textarea>
+            </div>
+            
+            <div class="form-group">
+              <input type="hidden" name="contactToken" value="<?php echo bin2hex(random_bytes(32)); ?>">
+              <button type="submit" class="send-message-btn">Send Message</button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Right Column: Address Details -->
+        <div class="contact-info">
+          <div class="contact-details">
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+              </div>
+              <div class="detail-content">
+                <h3>Our Address</h3>
+                <p>123 Industrial Parkway, Business District</p>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-phone" aria-hidden="true"></i>
+              </div>
+              <div class="detail-content">
+                <h3>Phone</h3>
+                <p><a href="tel:+15551234567">+1 (555) 123-4567</a></p>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-envelope" aria-hidden="true"></i>
+              </div>
+              <div class="detail-content">
+                <h3>Email</h3>
+                <p><a href="mailto:info@sumatotechnology.com">info@sumatotechnology.com</a></p>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-icon">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+              </div>
+              <div class="detail-content">
+                <h3>Business Hours</h3>
+                <p>Monday - Friday: 8:00 AM - 6:00 PM</p>
+                <p>Saturday: 9:00 AM - 2:00 PM</p>
+                <p>Sunday: Closed</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Map Section -->
+  <section class="map-section">
+    <div class="container">
+      <h2 class="section-title">Our Location</h2>
+      <div class="map-container">
+        <!-- Placeholder for map iframe - In a real implementation, you would replace this with an actual map embed -->
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.952912260219!2d3.375295414770757!3d6.5276300952531825!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwMzEnMzkuNSJOIDPCsDIyJzMxLjEiRQ!5e0!3m2!1sen!2sng!4v1620825468105!5m2!1sen!2sng" style="border:0;" allowfullscreen="" loading="lazy" title="Google Maps location of Sumato Technology" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-container">
+        <div class="footer-logo">
+          <img src="assets/logo.png" alt="Sumato Technology Logo" width="180" height="50">
+          <p>Your trusted B2B partner for industrial equipment and supplies.</p>
+          <div class="social-icons">
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="solutions.html">Solutions</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Product Categories</h3>
+          <ul>
+            <li><a href="products.html#industrial-tools">Industrial Tools</a></li>
+            <li><a href="products.html#machine-tools">Machine Tools</a></li>
+            <li><a href="products.html#oils-lubricants">Oils & Lubricants</a></li>
+            <li><a href="products.html#safety-equipment">Safety Equipment</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Contact Information</h3>
+          <p><i class="fas fa-map-marker-alt" aria-hidden="true"></i> 123 Industrial Parkway, Business District</p>
+          <p><i class="fas fa-phone" aria-hidden="true"></i> <a href="tel:+15551234567">+1 (555) 123-4567</a></p>
+          <p><i class="fas fa-envelope" aria-hidden="true"></i> <a href="mailto:info@sumatotechnology.com">info@sumatotechnology.com</a></p>
+        </div>
+      </div>
+      
+      <div class="copyright">
+        <p>&copy; <span id="currentYear">2023</span> Sumato Technology. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript Files -->
+  <script src="js/main.js" defer></script>
+  <script src="js/contact.js" defer></script>
+  <script>
+    // Update copyright year
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html> 

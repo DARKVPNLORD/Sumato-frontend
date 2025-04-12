@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Solutions - Sumato Technology</title>
+  <meta name="description" content="Comprehensive industrial solutions tailored to your business needs. Manufacturing, maintenance, and safety solutions.">
+  <meta name="theme-color" content="#e63232">
+  <!-- Security headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/solutions.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container header-container">
+      <div class="logo">
+        <a href="index.html">
+          <img src="assets/logo.png" alt="Sumato Technology Logo" width="180" height="50">
+        </a>
+      </div>
+      
+      <nav aria-label="Main navigation">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="solutions.html" class="active" aria-current="page">Solutions</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+      
+      <a href="login.html" class="btn btn-primary">Sign In</a>
+      
+      <!-- Mobile Menu Toggle Button (Hidden on Desktop) -->
+      <button class="mobile-menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    
+    <!-- Mobile Menu (Hidden by Default) -->
+    <div class="mobile-menu" id="mobile-menu" aria-labelledby="mobile-menu-toggle">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="solutions.html" class="active" aria-current="page">Solutions</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="login.html" class="mobile-sign-in">Sign In</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="solutions-hero">
+    <div class="container">
+      <h1>Industrial Solutions</h1>
+      <p>Comprehensive solutions tailored to your business needs</p>
+    </div>
+  </section>
+
+  <!-- Solutions List -->
+  <section class="solutions-list">
+    <div class="solutions-container">
+      <!-- Manufacturing Solutions -->
+      <div id="manufacturing" class="solution-item animate-on-scroll">
+        <div class="solution-item-icon">
+          <i class="fas fa-industry"></i>
+        </div>
+        <div class="solution-info">
+          <h2>Manufacturing Solutions</h2>
+          <p>Optimize your manufacturing processes with our comprehensive tooling and equipment solutions. We provide end-to-end solutions that help streamline your production line, improve product quality, and increase overall efficiency.</p>
+          <p>Our manufacturing solutions are designed to adapt to your specific industry requirements and production challenges, ensuring you get the most out of your operations.</p>
+          
+          <div class="solution-features">
+            <h3>Key Features</h3>
+            <ul class="features-list">
+              <li>Production line optimization services</li>
+              <li>Quality control equipment and implementation</li>
+              <li>Custom tooling solutions for specific manufacturing needs</li>
+              <li>Workflow analysis and improvement recommendations</li>
+              <li>Training and support for equipment operation</li>
+            </ul>
+          </div>
+          
+          <a href="contact.html" class="solution-link">Request Consultation</a>
+        </div>
+      </div>
+      
+      <!-- Maintenance Solutions -->
+      <div id="maintenance" class="solution-item animate-on-scroll">
+        <div class="solution-item-icon">
+          <i class="fas fa-wrench"></i>
+        </div>
+        <div class="solution-info">
+          <h2>Maintenance Solutions</h2>
+          <p>Keep your equipment running at peak performance with our comprehensive maintenance solutions. Our preventive maintenance programs help you avoid costly downtime, extend equipment life, and maintain optimal operational efficiency.</p>
+          <p>We offer customized maintenance plans that align with your equipment needs, operational schedule, and budget considerations.</p>
+          
+          <div class="solution-features">
+            <h3>Key Features</h3>
+            <ul class="features-list">
+              <li>Preventive maintenance programs and scheduling</li>
+              <li>Equipment repair services with quick response times</li>
+              <li>Inventory management for critical spare parts</li>
+              <li>Equipment performance monitoring and reporting</li>
+              <li>Maintenance staff training and certification</li>
+            </ul>
+          </div>
+          
+          <a href="contact.html" class="solution-link">Request Consultation</a>
+        </div>
+      </div>
+      
+      <!-- Safety Solutions -->
+      <div id="safety" class="solution-item animate-on-scroll">
+        <div class="solution-item-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="solution-info">
+          <h2>Safety Solutions</h2>
+          <p>Ensure workplace safety with our comprehensive safety equipment and protocols. We help you create a safer work environment that protects your employees, complies with industry regulations, and minimizes the risk of accidents.</p>
+          <p>Our safety solutions include both equipment provisions and implementation of best practices tailored to your specific workplace environment and industry requirements.</p>
+          
+          <div class="solution-features">
+            <h3>Key Features</h3>
+            <ul class="features-list">
+              <li>Workplace safety audits and hazard identification</li>
+              <li>Customized PPE programs for different work areas</li>
+              <li>Safety equipment installation and maintenance</li>
+              <li>Safety protocol development and implementation</li>
+              <li>Employee safety training and certification</li>
+            </ul>
+          </div>
+          
+          <a href="contact.html" class="solution-link">Request Consultation</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="solutions-cta">
+    <div class="container">
+      <div class="solutions-cta-content">
+        <h2>Let's Discuss Your Business Needs</h2>
+        <p>Our team of experts is ready to work with you to develop tailored solutions that address your specific challenges and help you achieve your business goals.</p>
+        <a href="contact.html" class="btn btn-primary">Schedule a Consultation</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-container">
+        <div class="footer-logo">
+          <img src="assets/logo.png" alt="Sumato Technology Logo" width="180" height="50">
+          <p>Your trusted B2B partner for industrial equipment and supplies.</p>
+          <div class="social-icons">
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="solutions.html">Solutions</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Product Categories</h3>
+          <ul>
+            <li><a href="products.html#industrial-tools">Industrial Tools</a></li>
+            <li><a href="products.html#machine-tools">Machine Tools</a></li>
+            <li><a href="products.html#oils-lubricants">Oils & Lubricants</a></li>
+            <li><a href="products.html#safety-equipment">Safety Equipment</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-columns">
+          <h3>Contact Information</h3>
+          <div class="contact-info">
+            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+            <p>123 Industrial Parkway, Business District</p>
+          </div>
+          <div class="contact-info">
+            <i class="fas fa-phone" aria-hidden="true"></i>
+            <p><a href="tel:+15551234567">+1 (555) 123-4567</a></p>
+          </div>
+          <div class="contact-info">
+            <i class="fas fa-envelope" aria-hidden="true"></i>
+            <p><a href="mailto:info@sumatotechnology.com">info@sumatotechnology.com</a></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="copyright">
+        <p>&copy; <span id="currentYear">2023</span> Sumato Technology. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript Files -->
+  <script src="js/main.js" defer></script>
+  <script src="js/solutions.js" defer></script>
+  <script>
+    // Update copyright year
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html> 
