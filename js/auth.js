@@ -1,4 +1,7 @@
-// Authentication Pages JavaScript (Login & Register)
+/**
+ * Authentication JavaScript for Sumato Technology Website
+ * Handles user registration, login, and form validation
+ */
 
 // Define the sumatoUtils namespace for utility functions
 window.sumatoUtils = {
@@ -69,512 +72,537 @@ window.sumatoUtils = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize authentication forms
-  initLoginForm();
-  initPasswordToggle();
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if user is already logged in
+  const token = localStorage.getItem('token');
+  const currentPath = window.location.pathname;
   
-  // Add focus styles for better accessibility
-  addFocusStyles();
+  // Protected routes check
+  if (currentPath.includes('/dashboard') || currentPath.includes('/profile')) {
+    if (!token) {
+      window.location.href = '/login.html';
+    } else {
+      // Fetch user profile to confirm token validity
+      authAPI.getProfile()
+        .catch(error => {
+          console.error('Authentication failed:', error);
+          // Clear invalid token
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login.html';
+        });
+    }
+  }
   
-  // Initialize registration form
-  const registerForm = document.getElementById('register-form');
+  // Redirect logged-in users away from auth pages
+  if ((currentPath.includes('/login.html') || currentPath.includes('/register.html')) && token) {
+    window.location.href = '/dashboard.html';
+  }
+
+  // Register form handler
+  const registerForm = document.getElementById('registerForm');
   if (registerForm) {
-    initializeRegisterForm(registerForm);
+    registerForm.addEventListener('submit', handleRegistration);
   }
-  
-  // Initialize forgot password form
-  const forgotPasswordForm = document.getElementById('forgot-password-form');
-  if (forgotPasswordForm) {
-    initializeForgotPasswordForm(forgotPasswordForm);
+
+  // Login form handler
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
   }
+
+  // Google login button
+  const googleLoginBtn = document.getElementById('googleLogin');
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', handleGoogleLogin);
+  }
+
+  // Password toggle functionality
+  const passwordToggleBtns = document.querySelectorAll('.password-toggle');
+  passwordToggleBtns.forEach(btn => {
+    btn.addEventListener('click', togglePasswordVisibility);
+  });
 });
 
-// Login Form Initialization
-function initLoginForm() {
-  const loginForm = document.getElementById('login-form');
-  
-  if (loginForm) {
-    // Add form validation on submit
-    loginForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Validate form fields
-      if (validateLoginForm()) {
-        // Show loading state
-        const submitButton = loginForm.querySelector('.auth-submit');
-        const originalButtonText = submitButton.textContent;
-        submitButton.classList.add('loading');
-        submitButton.textContent = 'Signing in...';
-        submitButton.disabled = true;
-        
-        // Simulate a login request to the backend
-        // In a real implementation, this would be replaced with an actual API call
-        setTimeout(function() {
-          // Reset loading state
-          submitButton.classList.remove('loading');
-          submitButton.textContent = originalButtonText;
-          submitButton.disabled = false;
-          
-          // Simulate successful login and redirect
-          showToast('Successfully signed in. Redirecting...', 'success');
-          
-          setTimeout(function() {
-            window.location.href = 'index.html';
-          }, 1500);
-        }, 2000);
-      }
-    });
-    
-    // Add real-time validation on input
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    
-    if (emailInput) {
-      emailInput.addEventListener('blur', function() {
-        validateEmail(this);
-      });
-      
-      emailInput.addEventListener('input', function() {
-        clearValidationMessage('email-validation');
-        this.classList.remove('invalid');
-      });
-    }
-    
-    if (passwordInput) {
-      passwordInput.addEventListener('blur', function() {
-        validatePassword(this);
-      });
-      
-      passwordInput.addEventListener('input', function() {
-        clearValidationMessage('password-validation');
-        this.classList.remove('invalid');
-      });
-    }
-  }
-}
-
-// Password Toggle Visibility
-function initPasswordToggle() {
-  // Password toggle for login and register form
-  const toggleButton = document.getElementById('toggle-password');
+/**
+ * Sets up the password toggle functionality
+ */
+function setupPasswordToggles() {
+  const togglePassword = document.getElementById('toggle-password');
   const passwordInput = document.getElementById('password');
-  
-  if (toggleButton && passwordInput) {
-    toggleButton.addEventListener('click', function() {
+
+  if (togglePassword && passwordInput) {
+    togglePassword.addEventListener('click', function() {
       const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
       passwordInput.setAttribute('type', type);
       
       // Update icon
-      const icon = toggleButton.querySelector('i');
+      const icon = togglePassword.querySelector('i');
       icon.classList.toggle('fa-eye');
       icon.classList.toggle('fa-eye-slash');
     });
   }
-  
-  // Confirm password toggle for register form
-  const toggleConfirmButton = document.getElementById('toggle-confirm-password');
+
+  const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
   const confirmPasswordInput = document.getElementById('confirm_password');
-  
-  if (toggleConfirmButton && confirmPasswordInput) {
-    toggleConfirmButton.addEventListener('click', function() {
+
+  if (toggleConfirmPassword && confirmPasswordInput) {
+    toggleConfirmPassword.addEventListener('click', function() {
       const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
       confirmPasswordInput.setAttribute('type', type);
       
       // Update icon
-      const icon = toggleConfirmButton.querySelector('i');
+      const icon = toggleConfirmPassword.querySelector('i');
       icon.classList.toggle('fa-eye');
       icon.classList.toggle('fa-eye-slash');
     });
   }
-  
-  // Adding a debug log to check if toggle buttons exist
-  console.log('Password toggle button exists:', !!toggleButton);
-  console.log('Confirm password toggle button exists:', !!toggleConfirmButton);
 }
 
-// Login Form Validation
-function validateLoginForm() {
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
+/**
+ * Handle registration form submission
+ * @param {Event} event - The form submission event
+ */
+async function handleRegistration(e) {
+  e.preventDefault();
+  
+  // Reset validation state
+  resetFormValidation(this);
+  
+  // Get form data
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName = document.getElementById('lastName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirmPassword = document.getElementById('confirmPassword').value;
+  const company = document.getElementById('company')?.value.trim() || '';
+  const termsCheckbox = document.getElementById('terms');
+  
+  // Validate form inputs
   let isValid = true;
   
-  // Validate email
-  if (emailInput && !validateEmail(emailInput)) {
+  if (!firstName) {
+    markInvalid('firstName', 'First name is required');
     isValid = false;
   }
   
-  // Validate password
-  if (passwordInput && !validatePassword(passwordInput)) {
+  if (!lastName) {
+    markInvalid('lastName', 'Last name is required');
     isValid = false;
+  }
+  
+  if (!email || !sumatoUtils.validateEmail(email)) {
+    markInvalid('email', 'Please enter a valid email address');
+    isValid = false;
+  }
+  
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.valid) {
+    markInvalid('password', passwordValidation.message);
+    isValid = false;
+  }
+  
+  if (password !== confirmPassword) {
+    markInvalid('confirmPassword', 'Passwords do not match');
+    isValid = false;
+  }
+  
+  if (termsCheckbox && !termsCheckbox.checked) {
+    markInvalid('terms', 'You must accept the Terms of Service');
+    isValid = false;
+  }
+  
+  if (!isValid) return;
+  
+  // Show loading state
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registering...';
+  
+  try {
+    // Call the API to register the user
+    const userData = {
+      firstName,
+      lastName,
+      email,
+      password,
+      company
+    };
+    
+    const response = await authAPI.register(userData);
+    
+    // Save auth token and user data
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('user', JSON.stringify(response.user));
+    
+    // Show success message
+    sumatoUtils.showMessage('Registration successful! Redirecting to dashboard...', 'success');
+    
+    // Redirect to dashboard after short delay
+    setTimeout(() => {
+      window.location.href = '/dashboard.html';
+    }, 1500);
+    
+  } catch (error) {
+    console.error('Registration error:', error);
+    sumatoUtils.showMessage(error.message || 'Registration failed. Please try again.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
+  }
+}
+
+/**
+ * Handle login form submission
+ * @param {Event} event - The form submission event
+ */
+async function handleLogin(e) {
+  e.preventDefault();
+  
+  // Reset validation state
+  resetFormValidation(this);
+  
+  // Get form data
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  
+  // Validate form inputs
+  let isValid = true;
+  
+  if (!email || !sumatoUtils.validateEmail(email)) {
+    markInvalid('email', 'Please enter a valid email address');
+    isValid = false;
+  }
+  
+  if (!password) {
+    markInvalid('password', 'Password is required');
+    isValid = false;
+  }
+  
+  if (!isValid) return;
+  
+  // Show loading state
+  const submitBtn = this.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Logging in...';
+  
+  try {
+    // Call the API to login
+    const credentials = {
+      email,
+      password
+    };
+    
+    const response = await authAPI.login(credentials);
+    
+    // Save auth token and user data
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('user', JSON.stringify(response.user));
+    
+    // Show success message
+    sumatoUtils.showMessage('Login successful! Redirecting...', 'success');
+    
+    // Redirect to dashboard after short delay
+    setTimeout(() => {
+      window.location.href = '/dashboard.html';
+    }, 1000);
+    
+  } catch (error) {
+    console.error('Login error:', error);
+    sumatoUtils.showMessage(error.message || 'Login failed. Please check your credentials.', 'error');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnText;
+  }
+}
+
+/**
+ * Handle Google login
+ * This will be implemented when Firebase is properly set up
+ */
+async function handleGoogleLogin() {
+  try {
+    // Initialize Firebase if not already done
+    if (!window.firebase?.apps?.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    const idToken = await result.user.getIdToken();
+
+    // Call backend with the token
+    const response = await authAPI.googleAuth(idToken);
+    
+    // Save auth token and user data
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('user', JSON.stringify(response.user));
+    
+    // Show success message
+    sumatoUtils.showMessage('Google login successful! Redirecting...', 'success');
+    
+    // Redirect to dashboard
+    setTimeout(() => {
+      window.location.href = '/dashboard.html';
+    }, 1000);
+  } catch (error) {
+    console.error('Google login error:', error);
+    sumatoUtils.showMessage('Failed to login with Google. Please try again.', 'error');
+  }
+}
+
+/**
+ * Function to logout user
+ */
+function logout() {
+  // Clear localStorage
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  
+  // Redirect to home page
+  window.location.href = '/';
+}
+
+/**
+ * Set up form validation
+ * @param {HTMLFormElement} form - The form element
+ */
+function setupFormValidation(form) {
+  // Email validation
+  const emailInput = form.querySelector('input[type="email"]');
+  if (emailInput) {
+    emailInput.addEventListener('blur', function() {
+      validateEmail(emailInput);
+    });
+  }
+  
+  // Password validation
+  const passwordInput = form.querySelector('input[id="password"]');
+  if (passwordInput) {
+    passwordInput.addEventListener('input', function() {
+      validatePassword(passwordInput);
+    });
+  }
+  
+  // Confirm password validation
+  const confirmPasswordInput = form.querySelector('input[id="confirm_password"]');
+  if (confirmPasswordInput && passwordInput) {
+    confirmPasswordInput.addEventListener('input', function() {
+      validateConfirmPassword(confirmPasswordInput, passwordInput);
+    });
+  }
+  
+  // Terms checkbox validation
+  const termsCheckbox = form.querySelector('input[id="agreeTerms"]');
+  if (termsCheckbox) {
+    termsCheckbox.addEventListener('change', function() {
+      validateTerms(termsCheckbox);
+    });
+  }
+}
+
+/**
+ * Validate the entire form
+ * @param {HTMLFormElement} form - The form element
+ * @returns {boolean} - Whether the form is valid
+ */
+function validateForm(form) {
+  let isValid = true;
+  
+  // Email validation
+  const emailInput = form.querySelector('input[type="email"]');
+  if (emailInput) {
+    isValid = validateEmail(emailInput) && isValid;
+  }
+  
+  // Password validation
+  const passwordInput = form.querySelector('input[id="password"]');
+  if (passwordInput) {
+    isValid = validatePassword(passwordInput) && isValid;
+  }
+  
+  // Confirm password validation
+  const confirmPasswordInput = form.querySelector('input[id="confirm_password"]');
+  if (confirmPasswordInput && passwordInput) {
+    isValid = validateConfirmPassword(confirmPasswordInput, passwordInput) && isValid;
+  }
+  
+  // Terms checkbox validation
+  const termsCheckbox = form.querySelector('input[id="agreeTerms"]');
+  if (termsCheckbox) {
+    isValid = validateTerms(termsCheckbox) && isValid;
   }
   
   return isValid;
 }
 
-// Email Validation
-function validateEmail(emailInput) {
-  const email = emailInput.value.trim();
-  const emailValidation = document.getElementById('email-validation');
-  
-  if (email === '') {
-    showValidationMessage(emailInput, emailValidation, 'Email address is required');
-    return false;
-  }
-  
-  // Simple email validation regex
+/**
+ * Validate email field
+ * @param {HTMLInputElement} input - The email input element
+ * @returns {boolean} - Whether the email is valid
+ */
+function validateEmail(input) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isValid = emailRegex.test(input.value);
   
-  if (!emailRegex.test(email)) {
-    showValidationMessage(emailInput, emailValidation, 'Please enter a valid email address');
-    return false;
+  const validationMessage = input.parentElement.querySelector('.validation-message');
+  if (validationMessage) {
+    validationMessage.textContent = isValid ? '' : 'Please enter a valid email address';
+    validationMessage.classList.toggle('error', !isValid);
   }
   
-  return true;
+  input.classList.toggle('invalid', !isValid);
+  return isValid;
 }
 
-// Password Validation
-function validatePassword(passwordInput) {
-  const password = passwordInput.value;
-  const passwordValidation = document.getElementById('password-validation');
+/**
+ * Validate password field
+ * @param {HTMLInputElement} input - The password input element
+ * @returns {boolean} - Whether the password is valid
+ */
+function validatePassword(input) {
+  const minLength = 8;
+  const hasUppercase = /[A-Z]/.test(input.value);
+  const hasLowercase = /[a-z]/.test(input.value);
+  const hasNumber = /\d/.test(input.value);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(input.value);
   
-  if (password === '') {
-    showValidationMessage(passwordInput, passwordValidation, 'Password is required');
-    return false;
-  }
+  const isLengthValid = input.value.length >= minLength;
+  const isValid = isLengthValid && hasUppercase && hasLowercase && hasNumber && hasSpecial;
   
-  if (password.length < 8) {
-    showValidationMessage(passwordInput, passwordValidation, 'Password must be at least 8 characters');
-    return false;
-  }
-  
-  return true;
-}
-
-// Show Validation Message
-function showValidationMessage(input, validationElement, message) {
-  input.classList.add('invalid');
-  
-  if (validationElement) {
-    validationElement.textContent = message;
-  }
-}
-
-// Clear Validation Message
-function clearValidationMessage(validationElementId) {
-  const validationElement = document.getElementById(validationElementId);
-  
-  if (validationElement) {
-    validationElement.textContent = '';
-  }
-}
-
-// Add Focus Styles
-function addFocusStyles() {
-  const focusableElements = document.querySelectorAll('input, button, a');
-  
-  focusableElements.forEach(function(element) {
-    element.addEventListener('focus', function() {
-      this.classList.add('focus');
-    });
-    
-    element.addEventListener('blur', function() {
-      this.classList.remove('focus');
-    });
-  });
-}
-
-// Show Toast Notification
-function showToast(message, type = 'success') {
-  // Remove existing toasts
-  const existingToasts = document.querySelectorAll('.toast');
-  existingToasts.forEach(function(toast) {
-    toast.remove();
-  });
-  
-  // Create toast element
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  
-  // Create toast content
-  const toastContent = document.createElement('div');
-  toastContent.className = 'toast-content';
-  toastContent.textContent = message;
-  
-  // Create toast icon
-  const toastIcon = document.createElement('div');
-  toastIcon.className = 'toast-icon';
-  
-  if (type === 'success') {
-    toastIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
-  } else if (type === 'error') {
-    toastIcon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
-  }
-  
-  // Create close button
-  const closeButton = document.createElement('button');
-  closeButton.className = 'toast-close';
-  closeButton.innerHTML = '<i class="fas fa-times"></i>';
-  closeButton.setAttribute('aria-label', 'Close notification');
-  
-  // Add event listener to close button
-  closeButton.addEventListener('click', function() {
-    toast.remove();
-  });
-  
-  // Assemble toast
-  toast.appendChild(toastIcon);
-  toast.appendChild(toastContent);
-  toast.appendChild(closeButton);
-  
-  // Add to document
-  document.body.appendChild(toast);
-  
-  // Remove toast after 2 seconds (reduced from 3)
-  setTimeout(function() {
-    if (document.body.contains(toast)) {
-      toast.remove();
+  const validationMessage = input.parentElement.parentElement.querySelector('.validation-message');
+  if (validationMessage) {
+    if (!input.value) {
+      validationMessage.textContent = 'Password is required';
+    } else if (!isLengthValid) {
+      validationMessage.textContent = `Password must be at least ${minLength} characters long`;
+    } else if (!isValid) {
+      validationMessage.textContent = 'Password must include uppercase, lowercase, number, and special character';
+    } else {
+      validationMessage.textContent = '';
     }
-  }, 2000);
-}
-
-// Prevent XSS in forms
-function sanitizeInput(input) {
-  const temp = document.createElement('div');
-  temp.textContent = input;
-  return temp.innerHTML;
-}
-
-// Registration Form Initialization
-function initializeRegisterForm(formElement) {
-  formElement.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    if (validateRegistrationForm(formElement)) {
-      // Form is valid, prepare for submission
-      handleRegistration(formElement);
-    }
-  });
-  
-  // Add input validation
-  setupFormValidation(formElement);
-  
-  // Add password strength meter
-  const passwordInput = formElement.querySelector('input[type="password"]');
-  if (passwordInput) {
-    passwordInput.addEventListener('input', function() {
-      updatePasswordStrength(this);
-    });
+    validationMessage.classList.toggle('error', !isValid);
   }
   
-  // Confirm password validation
-  const confirmPasswordInput = formElement.querySelector('input[name="confirm_password"]');
-  if (confirmPasswordInput) {
-    confirmPasswordInput.addEventListener('blur', function() {
-      validatePasswordMatch(this, passwordInput);
-    });
-    
-    passwordInput.addEventListener('blur', function() {
-      if (confirmPasswordInput.value) {
-        validatePasswordMatch(confirmPasswordInput, this);
-      }
-    });
-  }
-}
-
-// Forgot Password Form Initialization
-function initializeForgotPasswordForm(formElement) {
-  formElement.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    if (window.sumatoUtils.validateForm(formElement)) {
-      // Form is valid, prepare for submission
-      handleForgotPassword(formElement);
-    }
-  });
-  
-  // Add input validation
-  setupFormValidation(formElement);
-}
-
-// Setup form validation for any form
-function setupFormValidation(formElement) {
-  const inputs = formElement.querySelectorAll('input');
-  
-  inputs.forEach(input => {
-    // Validate on blur
-    input.addEventListener('blur', function() {
-      if (this.required && !this.value.trim()) {
-        markInvalid(this, 'This field is required');
-      } else if (this.type === 'email' && !window.sumatoUtils.validateEmail(this.value)) {
-        markInvalid(this, 'Please enter a valid email address');
-      } else {
-        markValid(this);
-      }
-    });
-    
-    // Clear error on input
-    input.addEventListener('input', function() {
-      this.classList.remove('invalid');
-      const errorElement = this.parentElement.querySelector('.error-message');
-      if (errorElement) {
-        errorElement.remove();
-      }
-    });
-  });
-}
-
-// Validation Helpers
-function markInvalid(inputElement, message) {
-  window.sumatoUtils.markInvalid(inputElement, message);
-}
-
-function markValid(inputElement) {
-  window.sumatoUtils.markValid(inputElement);
-}
-
-function validateRegistrationForm(formElement) {
-  // First do the standard validation
-  if (!window.sumatoUtils.validateForm(formElement)) {
-    return false;
+  // Update password strength indicator
+  const strengthIndicator = input.parentElement.parentElement.querySelector('.password-strength');
+  if (strengthIndicator) {
+    updatePasswordStrength(input.value, strengthIndicator);
   }
   
-  // Then check password match
-  const passwordInput = formElement.querySelector('input[name="password"]');
-  const confirmPasswordInput = formElement.querySelector('input[name="confirm_password"]');
-  
-  if (passwordInput && confirmPasswordInput) {
-    if (passwordInput.value !== confirmPasswordInput.value) {
-      markInvalid(confirmPasswordInput, 'Passwords do not match');
-      return false;
-    }
-  }
-  
-  // Check password strength
-  if (passwordInput && !isPasswordStrong(passwordInput.value)) {
-    markInvalid(passwordInput, 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character');
-    return false;
-  }
-  
-  return true;
+  input.classList.toggle('invalid', !isValid);
+  return isValid;
 }
 
-function validatePasswordMatch(confirmInput, passwordInput) {
-  if (confirmInput.value !== passwordInput.value) {
-    markInvalid(confirmInput, 'Passwords do not match');
-    return false;
-  } else {
-    markValid(confirmInput);
-    return true;
-  }
-}
-
-function isPasswordStrong(password) {
-  // Password must be at least 8 characters and include uppercase, lowercase, number, and special character
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  return regex.test(password);
-}
-
-function updatePasswordStrength(passwordInput) {
-  // Find or create strength meter
-  let strengthMeter = passwordInput.parentElement.querySelector('.password-strength');
-  if (!strengthMeter) {
-    strengthMeter = document.createElement('div');
-    strengthMeter.className = 'password-strength';
-    passwordInput.parentElement.appendChild(strengthMeter);
+/**
+ * Validate confirm password field
+ * @param {HTMLInputElement} confirmInput - The confirm password input element
+ * @param {HTMLInputElement} passwordInput - The password input element
+ * @returns {boolean} - Whether the confirm password is valid
+ */
+function validateConfirmPassword(confirmInput, passwordInput) {
+  const isValid = confirmInput.value === passwordInput.value;
+  
+  const validationMessage = confirmInput.parentElement.parentElement.querySelector('.validation-message');
+  if (validationMessage) {
+    validationMessage.textContent = isValid ? '' : 'Passwords do not match';
+    validationMessage.classList.toggle('error', !isValid);
   }
   
-  const password = passwordInput.value;
+  confirmInput.classList.toggle('invalid', !isValid);
+  return isValid;
+}
+
+/**
+ * Validate terms checkbox
+ * @param {HTMLInputElement} checkbox - The terms checkbox element
+ * @returns {boolean} - Whether the terms checkbox is checked
+ */
+function validateTerms(checkbox) {
+  const isValid = checkbox.checked;
   
-  // Calculate strength
+  const validationMessage = checkbox.parentElement.querySelector('.validation-message');
+  if (validationMessage) {
+    validationMessage.textContent = isValid ? '' : 'You must agree to the terms';
+    validationMessage.classList.toggle('error', !isValid);
+  }
+  
+  return isValid;
+}
+
+/**
+ * Update password strength indicator
+ * @param {string} password - The password to check
+ * @param {HTMLElement} indicator - The strength indicator element
+ */
+function updatePasswordStrength(password, indicator) {
   let strength = 0;
-  let feedback = '';
   
   if (password.length >= 8) strength += 1;
-  if (password.match(/[a-z]/)) strength += 1;
-  if (password.match(/[A-Z]/)) strength += 1;
-  if (password.match(/[0-9]/)) strength += 1;
-  if (password.match(/[^a-zA-Z0-9]/)) strength += 1;
+  if (password.length >= 12) strength += 1;
+  if (/[A-Z]/.test(password)) strength += 1;
+  if (/[a-z]/.test(password)) strength += 1;
+  if (/\d/.test(password)) strength += 1;
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 1;
   
-  // Update UI
-  strengthMeter.className = 'password-strength';
+  // Clear previous classes
+  indicator.className = 'password-strength';
   
   if (password.length === 0) {
-    strengthMeter.textContent = '';
+    indicator.style.width = '0%';
     return;
-  } else if (strength < 3) {
-    strengthMeter.classList.add('weak');
-    feedback = 'Weak';
-  } else if (strength < 5) {
-    strengthMeter.classList.add('medium');
-    feedback = 'Medium';
-  } else {
-    strengthMeter.classList.add('strong');
-    feedback = 'Strong';
   }
   
-  strengthMeter.textContent = `Password Strength: ${feedback}`;
+  // Set width based on strength
+  const widthPercentage = Math.min(100, (strength / 6) * 100);
+  indicator.style.width = `${widthPercentage}%`;
+  
+  // Add appropriate class based on strength
+  if (strength <= 2) {
+    indicator.classList.add('weak');
+  } else if (strength <= 4) {
+    indicator.classList.add('medium');
+  } else {
+    indicator.classList.add('strong');
+  }
 }
 
-// Form Submit Handlers
-function handleRegistration(formElement) {
-  // Show loading state
-  const submitButton = formElement.querySelector('button[type="submit"]');
-  const originalButtonText = submitButton.textContent;
-  submitButton.disabled = true;
-  submitButton.textContent = 'Creating account...';
+/**
+ * Show a message to the user
+ * @param {string} message - The message text
+ * @param {string} type - The message type (success, error, warning)
+ */
+function showMessage(message, type = 'info') {
+  // Create message element if it doesn't exist
+  let messageElement = document.querySelector('.message-container');
   
-  const formData = new FormData(formElement);
-  const formValues = {};
+  if (!messageElement) {
+    messageElement = document.createElement('div');
+    messageElement.className = 'message-container';
+    document.body.appendChild(messageElement);
+  }
   
-  // Convert FormData to object
-  formData.forEach((value, key) => {
-    formValues[key] = value;
+  // Create the message
+  const messageItem = document.createElement('div');
+  messageItem.className = `message ${type}`;
+  messageItem.textContent = message;
+  
+  // Add close button
+  const closeButton = document.createElement('button');
+  closeButton.className = 'message-close';
+  closeButton.innerHTML = '&times;';
+  closeButton.addEventListener('click', function() {
+    messageItem.remove();
   });
   
-  // In a real implementation, you would send this data to your backend API
-  // For now, we'll simulate an API call with a timeout
+  messageItem.appendChild(closeButton);
+  messageElement.appendChild(messageItem);
+  
+  // Auto-remove after a delay
   setTimeout(() => {
-    console.log('Registration would be submitted with:', formValues);
-    
-    // Redirect to login or dashboard
-    window.location.href = 'login.html?registered=true';
-    
-  }, 1000); // Reduced from 1500
-}
-
-function handleForgotPassword(formElement) {
-  // Show loading state
-  const submitButton = formElement.querySelector('button[type="submit"]');
-  const originalButtonText = submitButton.textContent;
-  submitButton.disabled = true;
-  submitButton.textContent = 'Sending...';
-  
-  const formData = new FormData(formElement);
-  const formValues = {};
-  
-  // Convert FormData to object
-  formData.forEach((value, key) => {
-    formValues[key] = value;
-  });
-  
-  // In a real implementation, you would send this data to your backend API
-  // For now, we'll simulate an API call with a timeout
-  setTimeout(() => {
-    console.log('Password reset would be submitted with:', formValues);
-    
-    // Reset form and show success message
-    formElement.reset();
-    submitButton.disabled = false;
-    submitButton.textContent = originalButtonText;
-    
-    // Show success message
-    const formContainer = formElement.closest('.auth-form');
-    window.sumatoUtils.showMessage(
-      formContainer, 
-      'Password reset instructions have been sent to your email.',
-      'success'
-    );
-    
-  }, 1000); // Reduced from 1500
+    messageItem.classList.add('fade-out');
+    setTimeout(() => {
+      messageItem.remove();
+    }, 300);
+  }, 5000);
 } 

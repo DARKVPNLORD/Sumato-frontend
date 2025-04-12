@@ -14,19 +14,47 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.textContent = 'Sending...';
         submitButton.disabled = true;
         
-        // In a real implementation, you would send data to your backend
-        // This is a simulation of an API call
-        setTimeout(function() {
-          // Reset form
-          contactForm.reset();
-          
-          // Show success message
-          showMessage('Your message has been sent successfully. We will get back to you soon!', 'success');
-          
+        // Gather form data
+        const formData = {
+          fullName: document.getElementById('fullName').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          subject: document.getElementById('subject').value.trim(),
+          message: document.getElementById('message').value.trim()
+        };
+        
+        // Submit to API
+        fetch('/api/quotes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add auth token if user is logged in
+            ...getAuthHeader()
+          },
+          body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Reset form
+            contactForm.reset();
+            
+            // Show success message
+            showMessage('Your quote request has been submitted successfully. We will get back to you soon!', 'success');
+          } else {
+            // Show error message
+            showMessage(data.message || 'There was an error submitting your request. Please try again.', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Quote submission error:', error);
+          showMessage('There was an error submitting your request. Please try again.', 'error');
+        })
+        .finally(() => {
           // Reset button
           submitButton.textContent = originalButtonText;
           submitButton.disabled = false;
-        }, 1500);
+        });
       }
     });
   }
@@ -145,5 +173,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Basic phone validation - adjust as needed for your requirements
     const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
     return phoneRegex.test(phone);
+  }
+  
+  function getAuthHeader() {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
   }
 }); 
