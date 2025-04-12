@@ -207,17 +207,53 @@
 
     // Setup event listeners when the DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Firebase if available
+      if (typeof firebase !== 'undefined') {
+        initializeFirebase();
+        
+        // Check for redirect result
+        firebase.auth().getRedirectResult().then((result) => {
+          if (result.user) {
+            console.log('Google sign-in successful via redirect');
+            
+            // Get the ID token
+            return result.user.getIdToken().then((idToken) => {
+              // Send token to backend
+              return authAPI.googleAuth(idToken);
+            }).then((response) => {
+              // Save auth token and user data
+              localStorage.setItem('token', response.token);
+              localStorage.setItem('user', JSON.stringify(response.user));
+              
+              // Show success message
+              const authForm = document.querySelector('.auth-form');
+              if (authForm) {
+                sumatoUtils.showMessage(authForm, 'Login successful! Redirecting...', 'success');
+              }
+              
+              // Redirect to dashboard after short delay
+              setTimeout(() => {
+                const redirectUrl = localStorage.getItem('auth_redirect') || '/dashboard.html';
+                localStorage.removeItem('auth_redirect');
+                window.location.href = redirectUrl;
+              }, 1000);
+            });
+          }
+        }).catch((error) => {
+          console.error('Redirect result error:', error);
+          const authForm = document.querySelector('.auth-form');
+          if (authForm) {
+            sumatoUtils.showMessage(authForm, 'Google sign-in failed. Please try again.', 'error');
+          }
+        });
+      }
+      
       // Initialize any required functionality
       if (document.getElementById('googleLogin')) {
         document.getElementById('googleLogin').addEventListener('click', function(e) {
           e.preventDefault();
           handleGoogleLogin();
         });
-      }
-      
-      // Initialize Firebase if available
-      if (typeof firebase !== 'undefined') {
-        initializeFirebase();
       }
       
       // Setup password toggle

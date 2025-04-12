@@ -335,7 +335,7 @@ function initializeFirebase() {
 }
 
 /**
- * Handle Google login button click - completely bypass Firebase popup
+ * Handle Google login button click
  */
 function handleGoogleLogin() {
   try {
@@ -345,21 +345,23 @@ function handleGoogleLogin() {
       return;
     }
 
-    console.log('Using direct auth URL approach instead of Firebase popup');
+    console.log('Starting Google login with Firebase signInWithRedirect');
     
-    // Store the current page URL for the redirect back
-    localStorage.setItem('auth_redirect', window.location.href);
+    // Create a Google auth provider
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
     
-    // Create a direct URL to Google's OAuth endpoint
-    // This bypasses the Firebase popup completely
-    const authUrl = new URL('https://accounts.google.com/o/oauth2/auth');
-    authUrl.searchParams.append('client_id', '572695801633-pdftc0j23l9a45ekabkl8qbh5d96j3c0.apps.googleusercontent.com');
-    authUrl.searchParams.append('redirect_uri', `https://sumatotechnology.netlify.app/auth-callback.html`);
-    authUrl.searchParams.append('response_type', 'token');
-    authUrl.searchParams.append('scope', 'email profile');
+    // Save current URL for redirect
+    const currentPage = window.location.pathname;
+    localStorage.setItem('auth_redirect', currentPage);
     
-    // Redirect to Google auth
-    window.location.href = authUrl.toString();
+    // Use signInWithRedirect - more reliable than popup
+    firebase.auth().signInWithRedirect(provider)
+      .catch((error) => {
+        console.error('Redirect error:', error);
+        sumatoUtils.showMessage(authForm, 'Error initiating Google sign-in. Please try again.', 'error');
+      });
     
   } catch (error) {
     const authForm = document.querySelector('.auth-form');
