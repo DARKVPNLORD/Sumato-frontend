@@ -8,7 +8,7 @@
   <meta name="description" content="Register for a Sumato Technology account to access exclusive features, place orders, and more.">
   <meta name="theme-color" content="#e63232">
   <!-- Security headers -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://www.gstatic.com https://*.googleapis.com; connect-src 'self' https://*.onrender.com https://*.netlify.app https://*.googleapis.com https://*.firebase.com https://*.firebaseio.com https://identitytoolkit.googleapis.com; frame-src 'self' https://www.google.com https://*.firebaseapp.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.googleapis.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://www.gstatic.com https://*.googleapis.com; connect-src 'self' https://*.onrender.com https://*.netlify.app https://*.googleapis.com https://*.firebase.com https://*.firebaseio.com https://identitytoolkit.googleapis.com; frame-src 'self' https://www.google.com https://*.firebaseapp.com https://accounts.google.com https://apis.google.com;">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -231,8 +231,22 @@
   <script>
     document.getElementById('currentYear').innerHTML = new Date().getFullYear();
     
-    // Generate a secure registration token
+    // Set up event listeners when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
+      // Set up Google login button
+      if (document.getElementById('googleLogin')) {
+        document.getElementById('googleLogin').addEventListener('click', function(e) {
+          e.preventDefault();
+          handleGoogleLogin();
+        });
+      }
+      
+      // Initialize Firebase if available
+      if (typeof firebase !== 'undefined') {
+        initializeFirebase();
+      }
+      
+      // Generate registration token
       const tokenField = document.querySelector('input[name="registerToken"]');
       if (tokenField) {
         // Generate a secure random token
@@ -257,30 +271,20 @@
           icon.classList.toggle('fa-eye-slash');
         });
       }
-    });
-
-    // Generate secure login token
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initialize any required functionality
-      if (document.getElementById('googleLogin')) {
-        document.getElementById('googleLogin').addEventListener('click', function(e) {
-          e.preventDefault();
-          handleGoogleLogin();
-        });
-      }
       
-      // Check for redirect result
-      if (typeof firebase !== 'undefined') {
-        initializeFirebase();
-        firebase.auth().getRedirectResult().then((result) => {
-          // This gives you a Google Access Token. You can use it to access Google APIs.
-          if (result.credential) {
-            // Handle the redirect success
-            console.log('Redirect success');
-          }
-        }).catch((error) => {
-          // Handle Errors here
-          console.error('Redirect error:', error);
+      // Setup password toggle
+      const togglePassword = document.getElementById('toggle-password');
+      const passwordInput = document.getElementById('password');
+      
+      if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          
+          // Update icon
+          const icon = togglePassword.querySelector('i');
+          icon.classList.toggle('fa-eye');
+          icon.classList.toggle('fa-eye-slash');
         });
       }
     });
