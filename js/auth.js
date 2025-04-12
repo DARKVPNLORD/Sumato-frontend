@@ -350,16 +350,58 @@ async function handleLogin(e) {
 }
 
 /**
+ * Check if Firebase configuration is valid
+ * @returns {boolean} - Whether the Firebase configuration is valid
+ */
+function isFirebaseConfigValid() {
+  if (!FIREBASE_CONFIG) {
+    console.error('Firebase configuration is missing');
+    return false;
+  }
+  
+  // Check for required properties
+  const requiredProps = ['apiKey', 'authDomain', 'projectId'];
+  for (const prop of requiredProps) {
+    if (!FIREBASE_CONFIG[prop]) {
+      console.error(`Firebase configuration is missing '${prop}'`);
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+/**
  * Initialize Firebase for authentication
  */
 function initializeFirebase() {
   try {
-    // Check if Firebase is already initialized
-    if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-      console.log('Initializing Firebase with config:', JSON.stringify(FIREBASE_CONFIG));
-      firebase.initializeApp(FIREBASE_CONFIG);
+    // Check if Firebase is loaded
+    if (typeof firebase === 'undefined') {
+      console.error('Firebase SDK is not loaded. Check your script includes.');
+      return false;
     }
-    console.log('Firebase initialized successfully');
+    
+    // Validate Firebase config
+    if (!isFirebaseConfigValid()) {
+      return false;
+    }
+    
+    // Check if Firebase is already initialized
+    if (firebase.apps.length === 0) {
+      console.log('Initializing Firebase with config:', FIREBASE_CONFIG);
+      firebase.initializeApp(FIREBASE_CONFIG);
+      console.log('Firebase initialized successfully');
+    } else {
+      console.log('Firebase already initialized');
+    }
+    
+    // Verify that auth is available
+    if (!firebase.auth) {
+      console.error('Firebase auth module is not available');
+      return false;
+    }
+    
     return true;
   } catch (error) {
     console.error('Firebase initialization error:', error);
@@ -377,10 +419,10 @@ function handleGoogleLogin() {
       return;
     }
 
-    console.log('Starting Google login with Firebase signInWithRedirect');
+    console.log('Starting Google login with Firebase');
     
-    // Show a loading message before redirect
-    showMessage('Redirecting to Google sign-in...', 'info');
+    // Show a loading message
+    showMessage('Connecting to Google sign-in...', 'info');
     
     // Create a Google auth provider
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -395,19 +437,69 @@ function handleGoogleLogin() {
       prompt: 'select_account'
     });
     
-    // Save current URL for redirect
-    const currentPage = window.location.pathname;
-    localStorage.setItem('auth_redirect', currentPage);
+    console.log('Using popup for Google auth (more reliable than redirect)');
     
-    console.log('Initiating redirect to Google auth');
-    
-    // Use signInWithRedirect with the explicit provider
-    firebase.auth().signInWithRedirect(provider)
+    // Use signInWithPopup which is more reliable in many cases
+    firebase.auth().signInWithPopup(provider)
+      .then((result) => {
+        console.log('Google sign-in successful via popup', result.user?.email);
+        
+        if (!result.user) {
+          showMessage('No user returned from Google. Please try again.', 'error');
+          return null;
+        }
+        
+        // Show processing message
+        showMessage('Processing your Google sign-in...', 'info');
+        
+        // Get the ID token
+        return result.user.getIdToken(true).then((idToken) => {
+          console.log('Got fresh ID token from Firebase');
+          
+          // Send token to backend
+          return authAPI.googleAuth(idToken);
+        });
+      })
+      .then((response) => {
+        if (response) {
+          console.log('Backend authentication successful:', response);
+          
+          // Save auth token and user data
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          
+          // Show success message
+          showMessage('Login successful! Redirecting to dashboard...', 'success');
+          
+          // Redirect to dashboard after short delay
+          setTimeout(() => {
+            window.location.href = '/dashboard.html';
+          }, 1000);
+        }
+      })
       .catch((error) => {
-        console.error('Redirect error:', error);
-        showMessage('Error initiating Google sign-in. Please try again.', 'error');
+        console.error('Google auth error:', error);
+        
+        // Extract comprehensive error message
+        let errorMessage = 'Google sign-in failed: ';
+        
+        if (error.code === 'auth/account-exists-with-different-credential') {
+          errorMessage += 'An account already exists with the same email address but different sign-in method';
+        } else if (error.code === 'auth/cancelled-popup-request') {
+          errorMessage += 'Sign-in popup was closed before completing';
+        } else if (error.code === 'auth/popup-blocked') {
+          errorMessage += 'Sign-in popup was blocked by your browser';
+          // Try redirect as fallback for popup blocked
+          firebase.auth().signInWithRedirect(provider);
+          return;
+        } else if (error.code === 'auth/popup-closed-by-user') {
+          errorMessage += 'Sign-in popup was closed before completing authentication';
+        } else {
+          errorMessage += error.message || 'Unknown error';
+        }
+        
+        showMessage(errorMessage, 'error');
       });
-    
   } catch (error) {
     console.error('Google login function error:', error);
     showMessage('An unexpected error occurred. Please try again later.', 'error');
@@ -416,6 +508,7 @@ function handleGoogleLogin() {
 
 /**
  * Process Google authentication result after redirect
+ * This is a backup method in case popup doesn't work and redirect is used
  */
 function processGoogleAuthResult() {
   console.log('Checking for Google auth redirect result');
@@ -426,8 +519,11 @@ function processGoogleAuthResult() {
   }
   
   try {
+    // Check if there's a pending redirect operation
     firebase.auth().getRedirectResult()
       .then((result) => {
+        console.log('Redirect result:', result);
+        
         if (result && result.user) {
           console.log('Google sign-in successful via redirect', result.user.email);
           
@@ -442,7 +538,15 @@ function processGoogleAuthResult() {
             return authAPI.googleAuth(idToken);
           });
         } else {
-          console.log('No redirect result user found');
+          console.log('No redirect result user found - this is normal if not coming from a redirect');
+          // Check if user is already signed in
+          const currentUser = firebase.auth().currentUser;
+          if (currentUser) {
+            console.log('User already signed in:', currentUser.email);
+            return currentUser.getIdToken(true).then(idToken => {
+              return authAPI.googleAuth(idToken);
+            });
+          }
           return null;
         }
       })
@@ -464,26 +568,31 @@ function processGoogleAuthResult() {
         }
       })
       .catch((error) => {
-        console.error('Google redirect result error:', error);
-        let errorMessage = 'Google sign-in failed: ';
-        
-        if (error.code === 'auth/account-exists-with-different-credential') {
-          errorMessage += 'An account already exists with the same email address but different sign-in method';
-        } else if (error.code === 'auth/invalid-credential') {
-          errorMessage += 'Invalid credentials';
-        } else if (error.code === 'auth/operation-not-allowed') {
-          errorMessage += 'Google sign-in is not enabled for this application';
-        } else if (error.code === 'auth/user-disabled') {
-          errorMessage += 'Your account has been disabled';
-        } else if (error.code === 'auth/user-not-found') {
-          errorMessage += 'No user found with this email';
-        } else if (error.code === 'auth/network-request-failed') {
-          errorMessage += 'Network error. Please check your internet connection';
+        // Only show error if it's not the common "no redirect operation" case
+        if (error.code !== 'auth/no-redirect-operation') {
+          console.error('Google redirect result error:', error);
+          let errorMessage = 'Google sign-in failed: ';
+          
+          if (error.code === 'auth/account-exists-with-different-credential') {
+            errorMessage += 'An account already exists with the same email address but different sign-in method';
+          } else if (error.code === 'auth/invalid-credential') {
+            errorMessage += 'Invalid credentials';
+          } else if (error.code === 'auth/operation-not-allowed') {
+            errorMessage += 'Google sign-in is not enabled for this application';
+          } else if (error.code === 'auth/user-disabled') {
+            errorMessage += 'Your account has been disabled';
+          } else if (error.code === 'auth/user-not-found') {
+            errorMessage += 'No user found with this email';
+          } else if (error.code === 'auth/network-request-failed') {
+            errorMessage += 'Network error. Please check your internet connection';
+          } else {
+            errorMessage += error.message || 'Unknown error';
+          }
+          
+          showMessage(errorMessage, 'error');
         } else {
-          errorMessage += error.message || 'Unknown error';
+          console.log('No redirect operation in progress (expected if not from redirect)');
         }
-        
-        showMessage(errorMessage, 'error');
       });
   } catch (error) {
     console.error('Error processing Google sign-in:', error);
