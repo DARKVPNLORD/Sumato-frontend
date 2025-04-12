@@ -372,7 +372,6 @@ function initializeFirebase() {
  */
 function handleGoogleLogin() {
   try {
-    const authForm = document.querySelector('.auth-form');
     if (!initializeFirebase()) {
       showMessage('Google login is not available. Please check your Firebase configuration.', 'error');
       return;
@@ -410,7 +409,6 @@ function handleGoogleLogin() {
       });
     
   } catch (error) {
-    const authForm = document.querySelector('.auth-form');
     console.error('Google login function error:', error);
     showMessage('An unexpected error occurred. Please try again later.', 'error');
   }
@@ -422,47 +420,75 @@ function handleGoogleLogin() {
 function processGoogleAuthResult() {
   console.log('Checking for Google auth redirect result');
   
-  firebase.auth().getRedirectResult()
-    .then((result) => {
-      if (result.user) {
-        console.log('Google sign-in successful via redirect', result.user.email);
-        
-        // Show processing message
-        showMessage('Processing your Google sign-in...', 'info');
-        
-        // Get the ID token with explicit API call to ensure fresh token
-        return result.user.getIdToken(true).then((idToken) => {
-          console.log('Got fresh ID token from Firebase');
+  if (!firebase || !firebase.auth) {
+    console.error('Firebase not properly initialized');
+    return;
+  }
+  
+  try {
+    firebase.auth().getRedirectResult()
+      .then((result) => {
+        if (result && result.user) {
+          console.log('Google sign-in successful via redirect', result.user.email);
           
-          // Send token to backend
-          return authAPI.googleAuth(idToken);
-        });
-      } else {
-        console.log('No redirect result user found');
-        return null;
-      }
-    })
-    .then((response) => {
-      if (response) {
-        console.log('Backend authentication successful:', response);
+          // Show processing message
+          showMessage('Processing your Google sign-in...', 'info');
+          
+          // Get the ID token with explicit API call to ensure fresh token
+          return result.user.getIdToken(true).then((idToken) => {
+            console.log('Got fresh ID token from Firebase');
+            
+            // Send token to backend
+            return authAPI.googleAuth(idToken);
+          });
+        } else {
+          console.log('No redirect result user found');
+          return null;
+        }
+      })
+      .then((response) => {
+        if (response) {
+          console.log('Backend authentication successful:', response);
+          
+          // Save auth token and user data
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          
+          // Show success message
+          showMessage('Login successful! Redirecting to dashboard...', 'success');
+          
+          // Redirect to dashboard after short delay
+          setTimeout(() => {
+            window.location.href = '/dashboard.html';
+          }, 1000);
+        }
+      })
+      .catch((error) => {
+        console.error('Google redirect result error:', error);
+        let errorMessage = 'Google sign-in failed: ';
         
-        // Save auth token and user data
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        if (error.code === 'auth/account-exists-with-different-credential') {
+          errorMessage += 'An account already exists with the same email address but different sign-in method';
+        } else if (error.code === 'auth/invalid-credential') {
+          errorMessage += 'Invalid credentials';
+        } else if (error.code === 'auth/operation-not-allowed') {
+          errorMessage += 'Google sign-in is not enabled for this application';
+        } else if (error.code === 'auth/user-disabled') {
+          errorMessage += 'Your account has been disabled';
+        } else if (error.code === 'auth/user-not-found') {
+          errorMessage += 'No user found with this email';
+        } else if (error.code === 'auth/network-request-failed') {
+          errorMessage += 'Network error. Please check your internet connection';
+        } else {
+          errorMessage += error.message || 'Unknown error';
+        }
         
-        // Show success message
-        showMessage('Login successful! Redirecting to dashboard...', 'success');
-        
-        // Redirect to dashboard after short delay
-        setTimeout(() => {
-          window.location.href = '/dashboard.html';
-        }, 1000);
-      }
-    })
-    .catch((error) => {
-      console.error('Google redirect result error:', error);
-      showMessage('Google sign-in failed: ' + (error.message || 'Unknown error'), 'error');
-    });
+        showMessage(errorMessage, 'error');
+      });
+  } catch (error) {
+    console.error('Error processing Google sign-in:', error);
+    showMessage('An unexpected error occurred during Google sign-in.', 'error');
+  }
 }
 
 /**
@@ -701,4 +727,105 @@ function updatePasswordStrength(password, indicator) {
   } else {
     indicator.classList.add('strong');
   }
+}
+
+/**
+ * Reset form validation state
+ * @param {HTMLFormElement} form - The form element to reset validation for
+ */
+function resetFormValidation(form) {
+  if (!form) return;
+  
+  // Reset all input fields
+  const inputs = form.querySelectorAll('input, select, textarea');
+  inputs.forEach(input => {
+    input.classList.remove('invalid');
+    
+    // Find and reset validation message
+    const parent = input.closest('.form-group, .mb-3');
+    if (parent) {
+      const validationMessage = parent.querySelector('.validation-message');
+      if (validationMessage) {
+        validationMessage.textContent = '';
+        validationMessage.classList.remove('error');
+      }
+    }
+  });
+}
+
+/**
+ * Display validation error for a specific field
+ * @param {string} fieldId - The ID of the field with error
+ * @param {string} message - The error message to display
+ */
+function markInvalid(fieldId, message) {
+  const field = document.getElementById(fieldId);
+  if (!field) return;
+  
+  field.classList.add('invalid');
+  
+  // Find the validation message element
+  let validationMessage;
+  const parent = field.closest('.form-group, .mb-3, .input-group');
+  
+  if (parent) {
+    validationMessage = parent.querySelector('.validation-message');
+    if (!validationMessage) {
+      // Look in parent's parent
+      validationMessage = parent.parentElement.querySelector('.validation-message');
+    }
+  }
+  
+  // If found, update the validation message
+  if (validationMessage) {
+    validationMessage.textContent = message;
+    validationMessage.classList.add('error');
+  } else {
+    // If no validation message element found, log to console
+    console.warn(`No validation message element found for field: ${fieldId}`);
+  }
+}
+
+/**
+ * Validate password strength
+ * @param {string} password - The password to validate
+ * @returns {object} - Validation result with valid flag and message
+ */
+function validatePassword(password) {
+  // Password validation rules
+  const minLength = 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+  // Check if password is empty
+  if (!password) {
+    return {
+      valid: false,
+      message: 'Password is required'
+    };
+  }
+  
+  // Check length
+  if (password.length < minLength) {
+    return {
+      valid: false,
+      message: `Password must be at least ${minLength} characters long`
+    };
+  }
+  
+  // Check complexity
+  if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+    return {
+      valid: false,
+      message: 'Password must include uppercase, lowercase, number, and special character'
+    };
+  }
+  
+  // Password is valid
+  return {
+    valid: true,
+    message: ''
+  };
 } 
