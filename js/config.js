@@ -68,12 +68,12 @@ const ENDPOINTS = {
  */
 // Firebase config with API key
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDVwlK5cFzuCz_C61CjxS4kIEP-5A7uhTU",    
-  authDomain: "sumato-2d6ea.firebaseapp.com",
-  projectId: "sumato-2d6ea",
-  storageBucket: "sumato-2d6ea.appspot.com",
-  messagingSenderId: "592462311628", 
-  appId: "1:592462311628:web:45ca0ca9e63fb7ae8bc3e4"
+  apiKey: "AIzaSyCZyr1DKVWsuuLeesijYFJ-QncdH1DzSX0",    
+  authDomain: "sumato-technology-6a3cc.firebaseapp.com",
+  projectId: "sumato-technology-6a3cc",
+  storageBucket: "sumato-technology-6a3cc.appspot.com",
+  messagingSenderId: "572695801633", 
+  appId: "1:572695801633:web:0a43805b98afc761e59860"
 };
 
 // Function to fetch Firebase config from backend (optional)

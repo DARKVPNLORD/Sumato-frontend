@@ -319,23 +319,13 @@ async function handleLogin(e) {
 /**
  * Initialize Firebase for authentication
  */
-async function initializeFirebase() {
+function initializeFirebase() {
   try {
     // Check if Firebase is already initialized
     if (!firebase.apps.length) {
-      // Try to fetch config from backend first
-      let config = FIREBASE_CONFIG;
-      try {
-        config = await getFirebaseConfig() || FIREBASE_CONFIG;
-      } catch (error) {
-        console.warn('Could not fetch Firebase config from API, using local config');
-      }
-      
-      console.log('Initializing Firebase with config:', JSON.stringify(config));
-      firebase.initializeApp(config);
+      console.log('Initializing Firebase with config:', JSON.stringify(FIREBASE_CONFIG));
+      firebase.initializeApp(FIREBASE_CONFIG);
     }
-    // Force-enable debug mode to see more details
-    firebase.auth().settings.appVerificationDisabledForTesting = true;
     console.log('Firebase initialized successfully');
     return true;
   } catch (error) {
@@ -347,82 +337,76 @@ async function initializeFirebase() {
 /**
  * Handle Google login button click
  */
-async function handleGoogleLogin() {
-  try {
-    // Initialize Firebase
-    const initialized = await initializeFirebase();
-    if (!initialized) {
-      sumatoUtils.showMessage(document.querySelector('.auth-form'), 'Google login is not available. Please check your Firebase configuration.', 'error');
-      return;
-    }
-
-    // Create Google auth provider
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('profile');
-    provider.addScope('email');
-    // Add additional OAuth scopes if needed
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
-
-    console.log('Google sign-in started');
-    
-    // Sign in with popup
-    const result = await firebase.auth().signInWithPopup(provider);
-    
-    // Get Firebase ID token
-    const idToken = await result.user.getIdToken();
-    
-    console.log('Google sign-in successful, sending ID token to backend');
-    
-    // Send the token to your backend
-    const response = await authAPI.googleAuth(idToken);
-    
-    // Save auth token and user data
-    localStorage.setItem('token', response.token);
-    localStorage.setItem('user', JSON.stringify(response.user));
-    
-    // Show success message
-    sumatoUtils.showMessage(document.querySelector('.auth-form'), 'Login successful! Redirecting to dashboard...', 'success');
-    
-    // Redirect to dashboard after short delay
-    setTimeout(() => {
-      window.location.href = '/dashboard.html';
-    }, 1500);
-    
-  } catch (error) {
-    console.error('Google login error:', error);
-    let errorMessage = 'Google login failed. Please try again.';
-    
-    if (error.code) {
-      // Firebase specific error codes
-      switch (error.code) {
-        case 'auth/popup-blocked':
-          errorMessage = 'Login popup was blocked. Please allow popups for this site.';
-          break;
-        case 'auth/popup-closed-by-user':
-          errorMessage = 'Login was cancelled. Please try again.';
-          break;
-        case 'auth/cancelled-popup-request':
-          errorMessage = 'Login request was cancelled. Please try again.';
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = 'Network error. Please check your connection and try again.';
-          break;
-        case 'auth/unauthorized-domain':
-          errorMessage = 'This domain is not authorized for Firebase authentication. Please add it in Firebase Console.';
-          break;
-        case 'auth/operation-not-allowed':
-          errorMessage = 'Google authentication is not enabled for this Firebase project.';
-          break;
-        case 'auth/internal-error':
-          errorMessage = 'An internal error occurred. Please try again later.';
-          break;
-      }
-    }
-    
-    sumatoUtils.showMessage(document.querySelector('.auth-form'), errorMessage, 'error');
+function handleGoogleLogin() {
+  const authForm = document.querySelector('.auth-form');
+  
+  if (!initializeFirebase()) {
+    sumatoUtils.showMessage(authForm, 'Google login is not available. Please check your Firebase configuration.', 'error');
+    return;
   }
+
+  // Create Google auth provider
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.addScope('profile');
+  provider.addScope('email');
+  
+  console.log('Google sign-in started');
+  
+  // Sign in with popup - use promises instead of async/await to avoid assertion errors
+  firebase.auth().signInWithPopup(provider)
+    .then(result => {
+      return result.user.getIdToken();
+    })
+    .then(idToken => {
+      console.log('Google sign-in successful, sending ID token to backend');
+      return authAPI.googleAuth(idToken);
+    })
+    .then(response => {
+      // Save auth token and user data
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      
+      // Show success message
+      sumatoUtils.showMessage(authForm, 'Login successful! Redirecting to dashboard...', 'success');
+      
+      // Redirect to dashboard after short delay
+      setTimeout(() => {
+        window.location.href = '/dashboard.html';
+      }, 1500);
+    })
+    .catch(error => {
+      console.error('Google login error:', error);
+      let errorMessage = 'Google login failed. Please try again.';
+      
+      if (error.code) {
+        // Firebase specific error codes
+        switch (error.code) {
+          case 'auth/popup-blocked':
+            errorMessage = 'Login popup was blocked. Please allow popups for this site.';
+            break;
+          case 'auth/popup-closed-by-user':
+            errorMessage = 'Login was cancelled. Please try again.';
+            break;
+          case 'auth/cancelled-popup-request':
+            errorMessage = 'Login request was cancelled. Please try again.';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Network error. Please check your connection and try again.';
+            break;
+          case 'auth/unauthorized-domain':
+            errorMessage = 'This domain is not authorized for Firebase authentication. Please add it in Firebase Console.';
+            break;
+          case 'auth/operation-not-allowed':
+            errorMessage = 'Google authentication is not enabled for this Firebase project.';
+            break;
+          case 'auth/internal-error':
+            errorMessage = 'An internal error occurred. Please try again later.';
+            break;
+        }
+      }
+      
+      sumatoUtils.showMessage(authForm, errorMessage, 'error');
+    });
 }
 
 /**
