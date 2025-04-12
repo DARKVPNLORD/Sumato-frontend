@@ -122,6 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
   passwordToggleBtns.forEach(btn => {
     btn.addEventListener('click', togglePasswordVisibility);
   });
+
+  // Initialize Firebase from config
+  if (sumatoConfig.firebase) {
+    firebase.initializeApp(sumatoConfig.firebase);
+  }
 });
 
 /**
@@ -265,6 +270,7 @@ async function handleLogin(e) {
   // Get form data
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
+  const rememberMe = document.getElementById('rememberMe').checked;
   
   // Validate form inputs
   let isValid = true;
@@ -299,6 +305,12 @@ async function handleLogin(e) {
     // Save auth token and user data
     localStorage.setItem('token', response.token);
     localStorage.setItem('user', JSON.stringify(response.user));
+    
+    if (rememberMe) {
+      localStorage.setItem('email', email);
+    } else {
+      localStorage.removeItem('email');
+    }
     
     // Show success message
     sumatoUtils.showMessage('Login successful! Redirecting...', 'success');
@@ -346,6 +358,9 @@ function handleGoogleLogin() {
     }
 
     console.log('Starting Google login with Firebase signInWithRedirect');
+    
+    // Show a loading message before redirect
+    sumatoUtils.showMessage(authForm, 'Redirecting to Google sign-in...', 'info');
     
     // Create a Google auth provider with explicit client ID
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -634,4 +649,74 @@ function showMessage(message, type = 'info') {
       messageItem.remove();
     }, 300);
   }, 5000);
+}
+
+/**
+ * Toggle password visibility
+ * @param {Event} e - The click event
+ */
+function togglePasswordVisibility(e) {
+  e.preventDefault();
+  
+  // Find the closest password input field
+  const btn = e.currentTarget;
+  const inputWrapper = btn.closest('.password-field');
+  const passwordInput = inputWrapper.querySelector('input');
+  
+  if (!passwordInput) return;
+  
+  // Toggle between password and text type
+  const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+  passwordInput.setAttribute('type', type);
+  
+  // Update icon
+  const icon = btn.querySelector('i');
+  if (icon) {
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+  }
+}
+
+/**
+ * Reset form validation state
+ * @param {HTMLFormElement} form - The form to reset
+ */
+function resetFormValidation(form) {
+  if (!form) return;
+  
+  // Clear all error messages
+  const errorMessages = form.querySelectorAll('.validation-message');
+  errorMessages.forEach(msg => {
+    msg.textContent = '';
+    msg.classList.remove('error');
+  });
+  
+  // Remove invalid class from inputs
+  const inputs = form.querySelectorAll('input');
+  inputs.forEach(input => {
+    input.classList.remove('invalid');
+  });
+}
+
+/**
+ * Mark an input as invalid
+ * @param {string} inputId - The ID of the input to mark
+ * @param {string} message - The error message
+ */
+function markInvalid(inputId, message) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  
+  input.classList.add('invalid');
+  
+  // Find validation message element
+  let validationMsg = input.parentElement.querySelector('.validation-message');
+  if (!validationMsg) {
+    validationMsg = input.parentElement.parentElement.querySelector('.validation-message');
+  }
+  
+  if (validationMsg) {
+    validationMsg.textContent = message;
+    validationMsg.classList.add('error');
+  }
 } 
