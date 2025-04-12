@@ -259,6 +259,17 @@
         });
       }
     });
+
+    // Generate secure login token
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize any required functionality
+      if (document.getElementById('googleLogin')) {
+        document.getElementById('googleLogin').addEventListener('click', function(e) {
+          e.preventDefault();
+          handleGoogleLogin();
+        });
+      }
+    });
   </script>
 </body>
 </html> 
