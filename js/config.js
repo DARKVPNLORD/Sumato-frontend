@@ -1,21 +1,27 @@
 /**
  * Configuration file for Sumato Technology Website
- * Contains API endpoints and other configuration settings
  */
 
-// API Base URL - Change this based on environment
-const API_BASE_URL = {
-  development: 'http://localhost:5000/api',
-  production: 'https://sumato-technology-api.onrender.com/api' // Updated with the actual deployed backend URL
+// Global configuration object
+window.sumatoConfig = {
+  // API Base URL
+  apiBaseURL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'https://sumato-technology-api.onrender.com/api',
+
+  // Firebase configuration
+  firebase: {
+    apiKey: "AIzaSyCZyr1DKVWsuuLeesijYFJ-QncdH1DzSX0",    
+    authDomain: "sumato-technology-6a3cc.firebaseapp.com",
+    projectId: "sumato-technology-6a3cc",
+    storageBucket: "sumato-technology-6a3cc.appspot.com",
+    messagingSenderId: "572695801633", 
+    appId: "1:572695801633:web:0a43805b98afc761e59860"
+  }
 };
 
-// Determine current environment (defaults to production for safety)
-const ENVIRONMENT = window.location.hostname === 'localhost' || 
-                    window.location.hostname === '127.0.0.1' ? 
-                    'development' : 'production';
-
-// Export the appropriate API base URL
-const API_URL = API_BASE_URL[ENVIRONMENT];
+// For backward compatibility
+const API_URL = sumatoConfig.apiBaseURL;
 
 // CORS settings
 const CORS_SETTINGS = {
@@ -26,15 +32,14 @@ const CORS_SETTINGS = {
   }
 };
 
-// API Endpoints
+// API Endpoints for backward compatibility
 const ENDPOINTS = {
   // Auth endpoints
   AUTH: {
     REGISTER: `${API_URL}/auth/register`,
     LOGIN: `${API_URL}/auth/login`,
     GOOGLE: `${API_URL}/auth/google`,
-    GET_USER: `${API_URL}/auth/me`,
-    FIREBASE_CONFIG: `${API_URL}/auth/firebase-config`
+    GET_USER: `${API_URL}/auth/me`
   },
   
   // User endpoints
@@ -61,20 +66,8 @@ const ENDPOINTS = {
   }
 };
 
-/* 
- * Firebase configuration 
- * This can be fetched from the backend API for additional security
- * or set directly here for simpler setup
- */
-// Firebase config with API key
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCZyr1DKVWsuuLeesijYFJ-QncdH1DzSX0",    
-  authDomain: "sumato-technology-6a3cc.firebaseapp.com",
-  projectId: "sumato-technology-6a3cc",
-  storageBucket: "sumato-technology-6a3cc.appspot.com",
-  messagingSenderId: "572695801633", 
-  appId: "1:572695801633:web:0a43805b98afc761e59860"
-};
+// For backward compatibility
+const FIREBASE_CONFIG = sumatoConfig.firebase;
 
 // Function to fetch Firebase config from backend (optional)
 async function getFirebaseConfig() {
