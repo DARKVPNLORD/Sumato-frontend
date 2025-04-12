@@ -216,11 +216,19 @@
           if (result.user) {
             console.log('Google sign-in successful via redirect');
             
+            // Show processing message
+            const authForm = document.querySelector('.auth-form');
+            if (authForm) {
+              sumatoUtils.showMessage(authForm, 'Processing your sign-in...', 'info');
+            }
+            
             // Get the ID token
             return result.user.getIdToken().then((idToken) => {
+              console.log('Got ID token, sending to backend');
               // Send token to backend
               return authAPI.googleAuth(idToken);
             }).then((response) => {
+              console.log('Backend authentication successful:', response);
               // Save auth token and user data
               localStorage.setItem('token', response.token);
               localStorage.setItem('user', JSON.stringify(response.user));
@@ -228,14 +236,12 @@
               // Show success message
               const authForm = document.querySelector('.auth-form');
               if (authForm) {
-                sumatoUtils.showMessage(authForm, 'Login successful! Redirecting...', 'success');
+                sumatoUtils.showMessage(authForm, 'Login successful! Redirecting to dashboard...', 'success');
               }
               
               // Redirect to dashboard after short delay
               setTimeout(() => {
-                const redirectUrl = localStorage.getItem('auth_redirect') || '/dashboard.html';
-                localStorage.removeItem('auth_redirect');
-                window.location.href = redirectUrl;
+                window.location.href = '/dashboard.html';
               }, 1000);
             });
           }
@@ -243,7 +249,17 @@
           console.error('Redirect result error:', error);
           const authForm = document.querySelector('.auth-form');
           if (authForm) {
-            sumatoUtils.showMessage(authForm, 'Google sign-in failed. Please try again.', 'error');
+            let errorMessage = 'Google sign-in failed. Please try again.';
+            if (error.code === 'auth/account-exists-with-different-credential') {
+              errorMessage = 'An account already exists with the same email address but different sign-in credentials.';
+            } else if (error.code === 'auth/invalid-credential') {
+              errorMessage = 'Invalid authentication credentials.';
+            } else if (error.code === 'auth/operation-not-allowed') {
+              errorMessage = 'Google authentication is not enabled for this application.';
+            } else if (error.code === 'auth/user-disabled') {
+              errorMessage = 'Your account has been disabled.';
+            }
+            sumatoUtils.showMessage(authForm, errorMessage, 'error');
           }
         });
       }
