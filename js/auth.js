@@ -335,79 +335,31 @@ function initializeFirebase() {
 }
 
 /**
- * Handle Google login button click
+ * Handle Google login button click - completely bypass Firebase popup
  */
 function handleGoogleLogin() {
   try {
     const authForm = document.querySelector('.auth-form');
-    
     if (!initializeFirebase()) {
       sumatoUtils.showMessage(authForm, 'Google login is not available. Please check your Firebase configuration.', 'error');
       return;
     }
 
-    console.log('Google sign-in starting...');
+    console.log('Using direct auth URL approach instead of Firebase popup');
     
-    // Create a simple popup directly instead of using redirect
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('email');
+    // Store the current page URL for the redirect back
+    localStorage.setItem('auth_redirect', window.location.href);
     
-    // Use signInWithPopup for a more direct approach
-    firebase.auth().signInWithPopup(provider)
-      .then((result) => {
-        // Get the Google ID token
-        return result.user.getIdToken();
-      })
-      .then((idToken) => {
-        console.log('Google sign-in successful, sending ID token to backend');
-        // Send the token to the backend
-        return authAPI.googleAuth(idToken);
-      })
-      .then((response) => {
-        // Save auth token and user data
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
-        
-        // Show success message
-        sumatoUtils.showMessage(authForm, 'Login successful! Redirecting to dashboard...', 'success');
-        
-        // Redirect to dashboard after short delay
-        setTimeout(() => {
-          window.location.href = '/dashboard.html';
-        }, 1500);
-      })
-      .catch((error) => {
-        console.error('Google login error:', error);
-        let errorMessage = 'Google login failed. Please try again.';
-        
-        if (error.code) {
-          switch (error.code) {
-            case 'auth/popup-blocked':
-              errorMessage = 'Login popup was blocked. Please allow popups for this site.';
-              break;
-            case 'auth/popup-closed-by-user':
-              errorMessage = 'Login was cancelled. Please try again.';
-              break;
-            case 'auth/cancelled-popup-request':
-              errorMessage = 'Login request was cancelled. Please try again.';
-              break;
-            case 'auth/network-request-failed':
-              errorMessage = 'Network error. Please check your connection and try again.';
-              break;
-            case 'auth/unauthorized-domain':
-              errorMessage = 'This domain is not authorized for Firebase authentication. Please add sumatotechnology.netlify.app to your Firebase authorized domains.';
-              break;
-            case 'auth/operation-not-allowed':
-              errorMessage = 'Google authentication is not enabled for this Firebase project.';
-              break;
-            case 'auth/internal-error':
-              errorMessage = 'An internal error occurred. Please try again later.';
-              break;
-          }
-        }
-        
-        sumatoUtils.showMessage(authForm, errorMessage, 'error');
-      });
+    // Create a direct URL to Google's OAuth endpoint
+    // This bypasses the Firebase popup completely
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/auth');
+    authUrl.searchParams.append('client_id', '572695801633-pdftc0j23l9a45ekabkl8qbh5d96j3c0.apps.googleusercontent.com');
+    authUrl.searchParams.append('redirect_uri', `https://sumatotechnology.netlify.app/auth-callback.html`);
+    authUrl.searchParams.append('response_type', 'token');
+    authUrl.searchParams.append('scope', 'email profile');
+    
+    // Redirect to Google auth
+    window.location.href = authUrl.toString();
     
   } catch (error) {
     const authForm = document.querySelector('.auth-form');
