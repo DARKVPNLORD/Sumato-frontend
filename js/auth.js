@@ -97,6 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const token = localStorage.getItem('token');
   const currentPath = window.location.pathname;
   
+  // Process Google auth redirect result if on login or register page
+  if (currentPath.includes('/login.html') || currentPath.includes('/register.html')) {
+    if (typeof processGoogleAuthResult === 'function') {
+      processGoogleAuthResult();
+    }
+  }
+  
   // Protected routes check
   if (currentPath.includes('/dashboard') || currentPath.includes('/profile')) {
     if (!token) {
@@ -135,6 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const googleLoginBtn = document.getElementById('googleLogin');
   if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', handleGoogleLogin);
+  }
+
+  // Initialize Firebase if available
+  if (typeof initializeFirebase === 'function' && 
+      (currentPath.includes('/login.html') || currentPath.includes('/register.html'))) {
+    initializeFirebase();
   }
 
   // Password toggle functionality
@@ -361,16 +374,16 @@ function handleGoogleLogin() {
   try {
     const authForm = document.querySelector('.auth-form');
     if (!initializeFirebase()) {
-      sumatoUtils.showMessage(authForm, 'Google login is not available. Please check your Firebase configuration.', 'error');
+      showMessage('Google login is not available. Please check your Firebase configuration.', 'error');
       return;
     }
 
     console.log('Starting Google login with Firebase signInWithRedirect');
     
     // Show a loading message before redirect
-    sumatoUtils.showMessage(authForm, 'Redirecting to Google sign-in...', 'info');
+    showMessage('Redirecting to Google sign-in...', 'info');
     
-    // Create a Google auth provider with explicit client ID
+    // Create a Google auth provider
     const provider = new firebase.auth.GoogleAuthProvider();
     
     // Add required scopes
@@ -380,26 +393,97 @@ function handleGoogleLogin() {
     // Set custom parameters
     provider.setCustomParameters({
       // Force account selection even if user is already signed in
-      prompt: 'select_account',
-      // Force consent screen to appear
-      access_type: 'offline'
+      prompt: 'select_account'
     });
     
     // Save current URL for redirect
     const currentPage = window.location.pathname;
     localStorage.setItem('auth_redirect', currentPage);
     
+    console.log('Initiating redirect to Google auth');
+    
     // Use signInWithRedirect with the explicit provider
     firebase.auth().signInWithRedirect(provider)
       .catch((error) => {
         console.error('Redirect error:', error);
-        sumatoUtils.showMessage(authForm, 'Error initiating Google sign-in. Please try again.', 'error');
+        showMessage('Error initiating Google sign-in. Please try again.', 'error');
       });
     
   } catch (error) {
     const authForm = document.querySelector('.auth-form');
     console.error('Google login function error:', error);
-    sumatoUtils.showMessage(authForm, 'An unexpected error occurred. Please try again later.', 'error');
+    showMessage('An unexpected error occurred. Please try again later.', 'error');
+  }
+}
+
+/**
+ * Process Google authentication result after redirect
+ */
+function processGoogleAuthResult() {
+  console.log('Checking for Google auth redirect result');
+  
+  firebase.auth().getRedirectResult()
+    .then((result) => {
+      if (result.user) {
+        console.log('Google sign-in successful via redirect', result.user.email);
+        
+        // Show processing message
+        showMessage('Processing your Google sign-in...', 'info');
+        
+        // Get the ID token with explicit API call to ensure fresh token
+        return result.user.getIdToken(true).then((idToken) => {
+          console.log('Got fresh ID token from Firebase');
+          
+          // Send token to backend
+          return authAPI.googleAuth(idToken);
+        });
+      } else {
+        console.log('No redirect result user found');
+        return null;
+      }
+    })
+    .then((response) => {
+      if (response) {
+        console.log('Backend authentication successful:', response);
+        
+        // Save auth token and user data
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        
+        // Show success message
+        showMessage('Login successful! Redirecting to dashboard...', 'success');
+        
+        // Redirect to dashboard after short delay
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1000);
+      }
+    })
+    .catch((error) => {
+      console.error('Google redirect result error:', error);
+      showMessage('Google sign-in failed: ' + (error.message || 'Unknown error'), 'error');
+    });
+}
+
+/**
+ * Helper function to show messages
+ * @param {string} message - The message to show
+ * @param {string} type - The message type (info, success, error)
+ */
+function showMessage(message, type) {
+  console.log(`Message (${type}):`, message);
+  
+  if (typeof sumatoUtils !== 'undefined' && sumatoUtils.showMessage) {
+    const container = document.querySelector('.auth-form');
+    if (container) {
+      sumatoUtils.showMessage(container, message, type);
+    } else {
+      // Fallback if container not found
+      alert(`${type.toUpperCase()}: ${message}`);
+    }
+  } else {
+    // Fallback if sumatoUtils not available
+    alert(`${type.toUpperCase()}: ${message}`);
   }
 }
 
@@ -617,44 +701,4 @@ function updatePasswordStrength(password, indicator) {
   } else {
     indicator.classList.add('strong');
   }
-}
-
-/**
- * Show a message to the user
- * @param {string} message - The message text
- * @param {string} type - The message type (success, error, warning)
- */
-function showMessage(message, type = 'info') {
-  // Create message element if it doesn't exist
-  let messageElement = document.querySelector('.message-container');
-  
-  if (!messageElement) {
-    messageElement = document.createElement('div');
-    messageElement.className = 'message-container';
-    document.body.appendChild(messageElement);
-  }
-  
-  // Create the message
-  const messageItem = document.createElement('div');
-  messageItem.className = `message ${type}`;
-  messageItem.textContent = message;
-  
-  // Add close button
-  const closeButton = document.createElement('button');
-  closeButton.className = 'message-close';
-  closeButton.innerHTML = '&times;';
-  closeButton.addEventListener('click', function() {
-    messageItem.remove();
-  });
-  
-  messageItem.appendChild(closeButton);
-  messageElement.appendChild(messageItem);
-  
-  // Auto-remove after a delay
-  setTimeout(() => {
-    messageItem.classList.add('fade-out');
-    setTimeout(() => {
-      messageItem.remove();
-    }, 300);
-  }, 5000);
 } 

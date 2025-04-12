@@ -201,54 +201,16 @@
   <script>
     document.getElementById('currentYear').innerHTML = new Date().getFullYear();
 
-    // Generate secure login token on page load
+    // Initialize event handlers on page load
     window.addEventListener('DOMContentLoaded', function() {
-      const loginToken = sumatoUtils.generateSecureToken();
-      document.getElementById('loginToken').value = loginToken;
-
       // Initialize Firebase if available
       if (typeof initializeFirebase === 'function') {
         initializeFirebase();
         
-        // Check for Google sign-in redirect result
-        firebase.auth().getRedirectResult().then((result) => {
-          if (result.user) {
-            console.log('Google sign-in successful via redirect');
-            
-            // Show processing message
-            showMessage('Processing your Google sign-in...', 'info');
-            
-            // Get the ID token
-            result.user.getIdToken().then((idToken) => {
-              console.log('Got ID token, sending to backend');
-              
-              // Send token to backend
-              return authAPI.googleAuth(idToken);
-            })
-            .then((response) => {
-              console.log('Backend authentication successful:', response);
-              
-              // Save auth token and user data
-              localStorage.setItem('token', response.token);
-              localStorage.setItem('user', JSON.stringify(response.user));
-              
-              // Show success message
-              showMessage('Login successful! Redirecting to dashboard...', 'success');
-              
-              // Redirect to dashboard after short delay
-              setTimeout(() => {
-                window.location.href = '/dashboard.html';
-              }, 1000);
-            })
-            .catch((error) => {
-              console.error('Error processing Google sign-in:', error);
-              showMessage('Error processing Google sign-in. Please try again.', 'error');
-            });
-          }
-        }).catch((error) => {
-          console.error('Google redirect result error:', error);
-          showMessage('Google sign-in failed. Please try again.', 'error');
-        });
+        // Process any Google sign-in redirect result
+        if (typeof processGoogleAuthResult === 'function') {
+          processGoogleAuthResult();
+        }
       }
     });
 

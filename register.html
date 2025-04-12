@@ -263,61 +263,25 @@
   <script>
     document.getElementById('currentYear').innerHTML = new Date().getFullYear();
     
-    // Generate secure registration token on page load
+    // Initialize event handlers on page load
     window.addEventListener('DOMContentLoaded', function() {
-      const registerToken = sumatoUtils.generateSecureToken();
-      document.getElementById('registerToken').value = registerToken;
-
       // Initialize Firebase if available
       if (typeof initializeFirebase === 'function') {
         initializeFirebase();
         
-        // Check for Google sign-in redirect result
-        firebase.auth().getRedirectResult().then((result) => {
-          if (result.user) {
-            console.log('Google sign-in successful via redirect');
-            
-            // Show processing message
-            showMessage('Processing your Google sign-in...', 'info');
-            
-            // Get the ID token
-            result.user.getIdToken().then((idToken) => {
-              console.log('Got ID token, sending to backend');
-              
-              // Send token to backend
-              return authAPI.googleAuth(idToken);
-            })
-            .then((response) => {
-              console.log('Backend authentication successful:', response);
-              
-              // Save auth token and user data
-              localStorage.setItem('token', response.token);
-              localStorage.setItem('user', JSON.stringify(response.user));
-              
-              // Show success message
-              showMessage('Registration successful! Redirecting to dashboard...', 'success');
-              
-              // Redirect to dashboard after short delay
-              setTimeout(() => {
-                window.location.href = '/dashboard.html';
-              }, 1000);
-            })
-            .catch((error) => {
-              console.error('Error processing Google sign-in:', error);
-              showMessage('Error processing Google sign-in. Please try again.', 'error');
-            });
-          }
-        }).catch((error) => {
-          console.error('Google redirect result error:', error);
-          showMessage('Google sign-in failed. Please try again.', 'error');
-        });
+        // Process any Google sign-in redirect result
+        if (typeof processGoogleAuthResult === 'function') {
+          processGoogleAuthResult();
+        }
       }
 
       // Add event listener for form submission
       document.getElementById('registerForm').addEventListener('submit', handleRegistration);
 
       // Setup form validation
-      setupFormValidation();
+      if (typeof setupFormValidation === 'function') {
+        setupFormValidation(document.getElementById('registerForm'));
+      }
 
       // Set up password visibility toggles
       const toggleButtons = document.querySelectorAll('.toggle-password');
@@ -338,16 +302,6 @@
         });
       });
     });
-    
-    // Helper function to show messages
-    function showMessage(message, type) {
-      if (typeof sumatoUtils !== 'undefined' && sumatoUtils.showMessage) {
-        const container = document.querySelector('.auth-form');
-        sumatoUtils.showMessage(container, message, type);
-      } else {
-        alert(message);
-      }
-    }
   </script>
 </body>
 </html> 
