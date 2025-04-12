@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Admin Login - Sumato Technology</title>
+  <meta name="description" content="Admin login for Sumato Technology.">
+  <meta name="theme-color" content="#e63232">
+  <!-- Security headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <style>
+    /* Admin login specific styles */
+    .admin-login {
+      background-color: #F8F9FA;
+    }
+    
+    .admin-header {
+      background-color: #212529;
+      padding: 15px 0;
+      text-align: center;
+    }
+    
+    .admin-header h1 {
+      color: white;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    
+    .admin-container {
+      max-width: 400px;
+      margin: 60px auto;
+      background-color: white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .admin-form-header {
+      background-color: #e63232;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .admin-form-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    
+    .admin-form {
+      padding: 30px;
+    }
+    
+    .admin-note {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .admin-footer {
+      text-align: center;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body class="admin-login">
+  <header class="admin-header">
+    <div class="container">
+      <h1>Sumato Technology Admin Portal</h1>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <div class="admin-form-header">
+      <h2>Admin Login</h2>
+    </div>
+    
+    <div class="admin-form">
+      <form id="admin-login-form">
+        <div class="form-group">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" name="email" class="form-control" required placeholder="Admin email address" autocomplete="email" aria-describedby="email-validation">
+          <div id="email-validation" class="validation-message" aria-live="polite"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="password" name="password" class="form-control" required placeholder="Admin password" autocomplete="current-password" aria-describedby="password-validation">
+            <button type="button" id="toggle-password" class="toggle-password" aria-label="Toggle password visibility">
+              <i class="fas fa-eye" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div id="password-validation" class="validation-message" aria-live="polite"></div>
+        </div>
+        
+        <button type="submit" class="auth-submit">Sign In</button>
+      </form>
+      
+      <div class="admin-note">
+        <p>This portal is for authorized administrators only.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="admin-footer">
+    <p>&copy; <span id="currentYear">2023</span> Sumato Technology. All rights reserved.</p>
+    <p><a href="index.html">Return to Website</a></p>
+  </div>
+
+  <!-- JavaScript Files -->
+  <script src="js/config.js" defer></script>
+  <script src="js/api.js" defer></script>
+  <script>
+    // Update copyright year
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    
+    // Setup password toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      const togglePassword = document.getElementById('toggle-password');
+      const passwordInput = document.getElementById('password');
+      
+      if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          
+          // Update icon
+          const icon = togglePassword.querySelector('i');
+          icon.classList.toggle('fa-eye');
+          icon.classList.toggle('fa-eye-slash');
+        });
+      }
+      
+      // Handle form submission
+      const adminLoginForm = document.getElementById('admin-login-form');
+      
+      if (adminLoginForm) {
+        adminLoginForm.addEventListener('submit', async function(event) {
+          event.preventDefault();
+          
+          try {
+            // Get form data
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Validate email
+            if (!validateEmail(email)) {
+              showValidationMessage('email-validation', 'Please enter a valid email address');
+              return;
+            }
+            
+            // Validate password
+            if (!password) {
+              showValidationMessage('password-validation', 'Password is required');
+              return;
+            }
+            
+            // Show loading state
+            const submitButton = adminLoginForm.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Signing In...';
+            submitButton.disabled = true;
+            
+            // Call admin login API
+            try {
+              const response = await adminAPI.login({ email, password });
+              
+              if (response.success) {
+                // Store admin token
+                localStorage.setItem('adminToken', response.token);
+                
+                // Show success message
+                showMessage('Login successful! Redirecting to admin dashboard...', 'success');
+                
+                // Redirect to admin dashboard
+                setTimeout(() => {
+                  window.location.href = 'admin-dashboard.html';
+                }, 1500);
+              } else {
+                throw new Error(response.message || 'Login failed');
+              }
+            } catch (error) {
+              console.error('Admin login error:', error);
+              showMessage(error.message || 'Invalid credentials', 'error');
+              submitButton.textContent = originalText;
+              submitButton.disabled = false;
+            }
+          } catch (error) {
+            console.error('Form submission error:', error);
+            showMessage('An unexpected error occurred', 'error');
+          }
+        });
+      }
+    });
+    
+    // Email validation
+    function validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+    
+    // Show validation message
+    function showValidationMessage(elementId, message) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = message;
+        element.classList.add('error');
+      }
+    }
+    
+    // Show message
+    function showMessage(message, type = 'info') {
+      // Create message element if it doesn't exist
+      let messageElement = document.querySelector('.message-container');
+      
+      if (!messageElement) {
+        messageElement = document.createElement('div');
+        messageElement.className = 'message-container';
+        document.body.appendChild(messageElement);
+      }
+      
+      // Create the message
+      const messageItem = document.createElement('div');
+      messageItem.className = `message ${type}`;
+      messageItem.textContent = message;
+      
+      // Add close button
+      const closeButton = document.createElement('button');
+      closeButton.className = 'message-close';
+      closeButton.innerHTML = '&times;';
+      closeButton.addEventListener('click', function() {
+        messageItem.remove();
+      });
+      
+      messageItem.appendChild(closeButton);
+      messageElement.appendChild(messageItem);
+      
+      // Auto-remove after a delay
+      setTimeout(() => {
+        messageItem.classList.add('fade-out');
+        setTimeout(() => {
+          messageItem.remove();
+        }, 300);
+      }, 5000);
+    }
+  </script>
+</body>
+</html> 
