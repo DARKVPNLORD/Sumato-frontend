@@ -347,16 +347,26 @@ function handleGoogleLogin() {
 
     console.log('Starting Google login with Firebase signInWithRedirect');
     
-    // Create a Google auth provider
+    // Create a Google auth provider with explicit client ID
     const provider = new firebase.auth.GoogleAuthProvider();
+    
+    // Add required scopes
     provider.addScope('email');
     provider.addScope('profile');
+    
+    // Set custom parameters
+    provider.setCustomParameters({
+      // Force account selection even if user is already signed in
+      prompt: 'select_account',
+      // Force consent screen to appear
+      access_type: 'offline'
+    });
     
     // Save current URL for redirect
     const currentPage = window.location.pathname;
     localStorage.setItem('auth_redirect', currentPage);
     
-    // Use signInWithRedirect - more reliable than popup
+    // Use signInWithRedirect with the explicit provider
     firebase.auth().signInWithRedirect(provider)
       .catch((error) => {
         console.error('Redirect error:', error);
